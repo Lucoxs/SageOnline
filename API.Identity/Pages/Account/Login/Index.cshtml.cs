@@ -100,13 +100,12 @@ public class Index : PageModel
 
         if (ModelState.IsValid)
         {
-            User? signedUser = await _userManager.FindByEmailAsync(Input.Username);
-            if (signedUser != null)
+            User? user = await _userManager.FindByEmailAsync(Input.Username);
+            if (user != null)
             {
-                var result = await _signInManager.PasswordSignInAsync(signedUser.UserName, Input.Password, Input.RememberLogin, false);
+                var result = await _signInManager.PasswordSignInAsync(user.UserName, Input.Password, Input.RememberLogin, false);
                 if (result.Succeeded)
                 {
-                    var user = _dbContext.Users.FirstOrDefault(x => x.UserName.ToLower() == Input.Username.ToLower());
                     await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id, user.Name, clientId: context?.Client?.ClientId));
 
                     // only set explicit expiration here if user chooses "remember me". 
