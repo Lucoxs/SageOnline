@@ -1,0 +1,43 @@
+﻿@page
+@model API.Identity.Pages.Account.FirstConnection.Index
+
+
+<div class="login-page">
+
+    <partial name="_ValidationSummary" />
+
+    <div class="row">
+        <div class="col-sm-3"></div>
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Première connexion</h2>
+                </div>
+
+                <div class="card-body">
+                    <form asp-page="/Account/FirstConnection/Index">
+                        <input type="hidden" asp-for="Input.ReturnUrl" />
+
+                        <div class="form-group">
+                            <label asp-for="Input.Username">Email</label>
+                            <input class="form-control" asp-for="Input.Username" autofocus>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Input.Password">Mot de passe</label>
+                            <input type="password" class="form-control" asp-for="Input.Password" autocomplete="off">
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Input.Password">Vérification du mot de passe</label>
+                            <input type="password" class="form-control" asp-for="Input.CheckPassword" autocomplete="off">
+                        </div>
+
+                        <button class="btn btn-primary" name="Input.Button" value="updatePassword">Connexion</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3"></div>
+    </div>
+</div>

@@ -5,64 +5,73 @@ using API.Identity.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddControllersWithViews();
-
-builder.Services.AddDbContext<AppDbContext>(options =>
+internal class Program
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConfig"));
-});
-
-builder.Services.AddIdentity<User, IdentityRole>()
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddDefaultTokenProviders();
-
-builder.Services.AddScoped<IDbInitializerService, DbInitializerService>();
-
-builder.Services.AddRazorPages();
-
-builder.Services
-    .AddIdentityServer(options =>
+    public static IConfiguration StaticConfig { get; private set; }
+    private static void Main(string[] args)
     {
-        options.Events.RaiseErrorEvents = true;
-        options.Events.RaiseInformationEvents = true;
-        options.Events.RaiseFailureEvents = true;
-        options.Events.RaiseSuccessEvents = true;
-        options.EmitStaticAudienceClaim = true;
-    })
-    .AddInMemoryIdentityResources(Config.IdentityResources)
-    .AddInMemoryApiScopes(Config.ApiScopes)
-    .AddInMemoryClients(Config.Clients)
-    .AddAspNetIdentity<User>()
-    .AddDeveloperSigningCredential();
+        var builder = WebApplication.CreateBuilder(args);
 
-var app = builder.Build();
+        StaticConfig = builder.Configuration;
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
-}
+        builder.Services.AddControllersWithViews();
 
-app.UseHttpsRedirection();
-app.UseStaticFiles();
+        builder.Services.AddDbContext<AppDbContext>(options =>
+        {
+            options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConfig"));
+        });
 
-SeedData();
+        builder.Services.AddIdentity<User, IdentityRole>()
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
 
-app.UseRouting();
-app.UseIdentityServer();
-app.UseAuthorization();
-app.MapRazorPages().RequireAuthorization();
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+        builder.Services.AddScoped<IDbInitializerService, DbInitializerService>();
 
-app.Run();
+        builder.Services.AddRazorPages();
 
-void SeedData()
-{
-    using var scope = app.Services.CreateScope();
-    var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializerService>();
-    dbInitializer.Initialize();
+        builder.Services
+            .AddIdentityServer(options =>
+            {
+                options.Events.RaiseErrorEvents = true;
+                options.Events.RaiseInformationEvents = true;
+                options.Events.RaiseFailureEvents = true;
+                options.Events.RaiseSuccessEvents = true;
+                options.EmitStaticAudienceClaim = true;
+            })
+            .AddInMemoryIdentityResources(Config.IdentityResources)
+            .AddInMemoryApiScopes(Config.ApiScopes)
+            .AddInMemoryClients(Config.Clients)
+            .AddAspNetIdentity<User>()
+            .AddDeveloperSigningCredential();
+
+        var app = builder.Build();
+
+        if (!app.Environment.IsDevelopment())
+        {
+            app.UseExceptionHandler("/Home/Error");
+            app.UseHsts();
+        }
+
+        app.UseHttpsRedirection();
+        app.UseStaticFiles();
+
+        SeedData();
+
+        app.UseRouting();
+        app.UseIdentityServer();
+        app.UseAuthorization();
+        app.MapRazorPages().RequireAuthorization();
+        app.MapControllerRoute(
+            name: "default",
+            pattern: "{controller=Home}/{action=Index}/{id?}");
+
+        app.Run();
+
+        void SeedData()
+        {
+            using var scope = app.Services.CreateScope();
+            var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializerService>();
+            dbInitializer.Initialize();
+        }
+    }
 }

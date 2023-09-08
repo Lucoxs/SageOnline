@@ -24,7 +24,7 @@ namespace API.Identity.Controllers
                     Content = new FormUrlEncodedContent(new Dictionary<string, string>
                     {
                         { "client_id", client_id },
-                        { "client_secret", client_id },
+                        { "client_secret", Program.StaticConfig[$"{client_id}:Secret"] },
                         { "grant_type", "authorization_code" },
                         { "code", code },
                         { "redirect_uri", "http://localhost:3000/signin-oidc" }
@@ -58,7 +58,7 @@ namespace API.Identity.Controllers
                     Content = new FormUrlEncodedContent(new Dictionary<string, string>
                     {
                         { "client_id", client_id },
-                        { "client_secret", client_id },
+                        { "client_secret", Program.StaticConfig[$"{client_id}:Secret"] },
                         { "grant_type", "refresh_token" },
                         { "refresh_token", refresh_token }
                     })
@@ -75,5 +75,11 @@ namespace API.Identity.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+       /* [HttpPost("logout")]
+        public async Task<IActionResult> Logout(string client_id, string refresh_token)
+        {
+            
+        }*/
     }
 }

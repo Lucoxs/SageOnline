@@ -5,6 +5,8 @@ namespace API.Identity.Models
 {
     public class Config
     {
+        public const string OfflineAccess = IdentityServerConstants.StandardScopes.OfflineAccess;
+        public const string OpenId = IdentityServerConstants.StandardScopes.OpenId;
         public const string SuperAdmin = "super_admin";
         public const string Admin = "admin";
         public const string User = "user";
@@ -30,18 +32,18 @@ namespace API.Identity.Models
             {
                 new Client
                 {
-                    ClientId = SuperAdmin,
-                    ClientSecrets = { new Secret(SuperAdmin.Sha256()) },
+                    ClientId = "WebApplication",
+                    ClientSecrets = { new Secret(Program.StaticConfig["WebApplication:Secret"].Sha256()) },
                     AllowedGrantTypes = GrantTypes.Code,
                     RequirePkce = false,
                     AllowOfflineAccess = true,
-                    AllowedScopes =  
-                    { 
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.OfflineAccess,
-                        SuperAdmin, 
-                        Admin, 
-                        User 
+                    AllowedScopes =
+                    {
+                        OpenId,
+                        OfflineAccess,
+                        SuperAdmin,
+                        Admin,
+                        User
                     },
                     RedirectUris={ "http://localhost:3000/signin-oidc" },
                     PostLogoutRedirectUris = { "https://localhost:7176/signout-callback-oidc " }

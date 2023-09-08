@@ -1,16 +1,23 @@
 using API.Identity.Context;
 using API.Identity.Models;
 using Duende.IdentityServer;
+using Duende.IdentityServer.EntityFramework.Entities;
 using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Test;
+using Duende.IdentityServer.Validation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.Primitives;
+using ApiScope = Duende.IdentityServer.Models.ApiScope;
 
 namespace UI.Pages.Login;
 
@@ -29,10 +36,10 @@ public class Index : PageModel
     private readonly IIdentityProviderStore _identityProviderStore;
 
     public ViewModel View { get; set; }
-        
+
     [BindProperty]
     public InputModel Input { get; set; }
-        
+
     public Index(
         IIdentityServerInteractionService interaction,
         IAuthenticationSchemeProvider schemeProvider,
@@ -56,7 +63,7 @@ public class Index : PageModel
     public async Task<IActionResult> OnGet(string returnUrl)
     {
         await BuildModelAsync(returnUrl);
-            
+
         if (View.IsExternalLoginOnly)
         {
             // we only have one option for logging in and it's an external provider
@@ -65,48 +72,40 @@ public class Index : PageModel
 
         return Page();
     }
-        
+
     public async Task<IActionResult> OnPost()
     {
         // check if we are in the context of an authorization request
         var context = await _interaction.GetAuthorizationContextAsync(Input.ReturnUrl);
-
-        // the user clicked the "cancel" button
-        if (Input.Button != "login")
+        /*context.ValidatedResources.Resources.ApiScopes = new List<ApiScope>() { new ApiScope() { Name = "admin" } };
+        context.ValidatedResources.ParsedScopes = new List<ParsedScopeValue>()
         {
-            if (context != null)
+            new ParsedScopeValue("openid"),
+            new ParsedScopeValue("offline_access"),
+            new ParsedScopeValue("admin")
+        };*/
+        User? user = await _userManager.FindByEmailAsync(Input.Username);
+        if (user != null)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.Any() && !string.IsNullOrWhiteSpace(Input.ReturnUrl))
             {
-                // if the user cancels, send a result back into IdentityServer as if they 
-                // denied the consent (even if this client does not require consent).
-                // this will send back an access denied OIDC error response to the client.
-                await _interaction.DenyAuthorizationAsync(context, AuthorizationError.AccessDenied);
-
-                // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
-                if (context.IsNativeClient())
+                SetUserScopes(roles);
+                if (!await _userManager.HasPasswordAsync(user))
                 {
-                    // The client is native, so this change in how to
-                    // return the response is for better UX for the end user.
-                    return this.LoadingPage(Input.ReturnUrl);
+                    Dictionary<string, StringValues> queryParams = new()
+                        {
+                            { "ReturnUrl", Input.ReturnUrl },
+                            { "email", Input.Username }
+                        };
+                    var uri = QueryHelpers.AddQueryString("~/Account/FirstConnection", queryParams);
+                    return Redirect(uri);
                 }
 
-                return Redirect(Input.ReturnUrl);
-            }
-            else
-            {
-                // since we don't have a valid context, then we just go back to the home page
-                return Redirect("~/");
-            }
-        }
-
-        if (ModelState.IsValid)
-        {
-            User? user = await _userManager.FindByEmailAsync(Input.Username);
-            if (user != null)
-            {
                 var result = await _signInManager.PasswordSignInAsync(user.UserName, Input.Password, Input.RememberLogin, false);
                 if (result.Succeeded)
                 {
-                    await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id, user.Name, clientId: context?.Client?.ClientId));
+                    await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id, user.FirstName, clientId: context?.Client?.ClientId));
 
                     // only set explicit expiration here if user chooses "remember me". 
                     // otherwise we rely upon expiration configured in cookie middleware.
@@ -126,19 +125,6 @@ public class Index : PageModel
                         DisplayName = user.UserName
                     };
 
-                    if (context != null)
-                    {
-                        if (context.IsNativeClient())
-                        {
-                            // The client is native, so this change in how to
-                            // return the response is for better UX for the end user.
-                            return this.LoadingPage(Input.ReturnUrl);
-                        }
-
-                        // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
-                        return Redirect(Input.ReturnUrl);
-                    }
-
                     // request for a local page
                     if (Url.IsLocalUrl(Input.ReturnUrl))
                     {
@@ -154,24 +140,44 @@ public class Index : PageModel
                         throw new Exception("invalid return URL");
                     }
                 }
+                await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, "invalid credentials", clientId: context?.Client.ClientId));
+                ModelState.AddModelError(string.Empty, LoginOptions.InvalidPasswordErrorMessage);
             }
-
-            await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, "invalid credentials", clientId:context?.Client.ClientId));
-            ModelState.AddModelError(string.Empty, LoginOptions.InvalidCredentialsErrorMessage);
+            else
+            {
+                await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, "invalid credentials", clientId: context?.Client.ClientId));
+                ModelState.AddModelError(string.Empty, LoginOptions.InvalidScopeErrorMessage);
+            }
+        }
+        else
+        {
+            await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, "invalid credentials", clientId: context?.Client.ClientId));
+            ModelState.AddModelError(string.Empty, LoginOptions.InvalidUsernameErrorMessage);
         }
 
         // something went wrong, show form with error
         await BuildModelAsync(Input.ReturnUrl);
         return Page();
     }
-        
+
+    public void SetUserScopes(IList<string> roles)
+    {
+        var parsedUrl = Input.ReturnUrl.Split("?");
+        var queryParams = QueryHelpers.ParseQuery(parsedUrl[1]);
+        if (queryParams.ContainsKey("scope"))
+            queryParams["scope"] = string.Join(" ", roles);
+        else
+            queryParams.Add("scope", string.Join(" ", roles));
+        Input.ReturnUrl = QueryHelpers.AddQueryString(parsedUrl[0], queryParams);
+    }
+
     private async Task BuildModelAsync(string returnUrl)
     {
         Input = new InputModel
         {
             ReturnUrl = returnUrl
         };
-            
+
         var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
         if (context?.IdP != null && await _schemeProvider.GetSchemeAsync(context.IdP) != null)
         {

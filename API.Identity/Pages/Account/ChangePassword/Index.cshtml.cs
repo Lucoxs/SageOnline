@@ -76,7 +76,7 @@ public class Index : PageModel
 
         if (ModelState.IsValid)
         {
-            var user = _users.CreateUser(Input.Username, Input.Password, Input.Name, Input.Email);
+            var user = _users.CreateUser(Input.Username, Input.Password);
 
             // issue authentication cookie with subject ID and username
             var isuser = new IdentityServerUser(user.SubjectId)
