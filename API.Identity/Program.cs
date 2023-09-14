@@ -2,34 +2,71 @@ using API.Identity.Context;
 using API.Identity.Interfaces;
 using API.Identity.Models;
 using API.Identity.Services;
+using Duende.IdentityServer.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 internal class Program
 {
-    public static IConfiguration StaticConfig { get; private set; }
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        StaticConfig = builder.Configuration;
+        builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 
         builder.Services.AddControllersWithViews();
+        builder.Services.AddSwaggerGen();
 
         builder.Services.AddDbContext<AppDbContext>(options =>
         {
             options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConfig"));
         });
 
+        /*Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.Console()
+                .CreateLogger();
+
+        builder.Services.AddSingleton(Log.Logger);*/
+
+        /*builder.Services.AddSingleton<ICorsPolicyService>((container) => {
+            var logger = container.GetRequiredService<ILogger<DefaultCorsPolicyService>>();
+            return new DefaultCorsPolicyService(logger)
+            {
+                AllowedOrigins = { "http://localhost:3000/" }
+            };
+        });*/
+
+        /*builder.Services.AddSingleton<ICorsPolicyService>((container) =>
+        {
+            var logger = container.GetRequiredService<ILogger<DefaultCorsPolicyService>>();
+            return new DefaultCorsPolicyService(logger)
+            {
+                AllowAll = true
+            };
+        });
+*/
+        /*builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("CorsPolicy",
+                builder => builder.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
+        });*/
+
+        /*builder.Services.AddSingleton<ICorsPolicyService>((container) => {
+            var logger = container.GetRequiredService<ILogger<DefaultCorsPolicyService>>();
+            return new DefaultCorsPolicyService(logger)
+            {
+                AllowAll = true
+            };
+        });*/
+
         builder.Services.AddIdentity<User, IdentityRole>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
-        builder.Services.AddScoped<IDbInitializerService, DbInitializerService>();
-
-        builder.Services.AddRazorPages();
-
-        builder.Services
+        var identityBuilder = builder.Services
             .AddIdentityServer(options =>
             {
                 options.Events.RaiseErrorEvents = true;
@@ -42,14 +79,37 @@ internal class Program
             .AddInMemoryApiScopes(Config.ApiScopes)
             .AddInMemoryClients(Config.Clients)
             .AddAspNetIdentity<User>()
+            .AddCorsPolicyService<CorsPolicyService>();
+
+        /*builder.Services.AddScoped<ICorsPolicyService, CorsPolicyService>();*/
+        builder.Services.AddScoped<IDbInitializerService, DbInitializerService>();
+        builder.Services.AddScoped<IProfileService, ProfileService>();
+        builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddScoped<CompanyService>();
+        builder.Services.AddScoped<UserService>();
+
+        identityBuilder
             .AddDeveloperSigningCredential();
 
+        builder.Services.AddRazorPages();
+
         var app = builder.Build();
+        
+        app.UseCors(x => x
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()
+            .SetIsOriginAllowed(origin => true));
 
         if (!app.Environment.IsDevelopment())
         {
             app.UseExceptionHandler("/Home/Error");
             app.UseHsts();
+        }
+        else
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
         }
 
         app.UseHttpsRedirection();
@@ -64,6 +124,8 @@ internal class Program
         app.MapControllerRoute(
             name: "default",
             pattern: "{controller=Home}/{action=Index}/{id?}");
+
+        /*app.UseCors("CorsPolicy");*/
 
         app.Run();
 

@@ -33,7 +33,7 @@ namespace API.Identity.Models
                 new Client
                 {
                     ClientId = "WebApplication",
-                    ClientSecrets = { new Secret(Program.StaticConfig["WebApplication:Secret"].Sha256()) },
+                    ClientSecrets = { new Secret("879F65E8-A124-4AEA-9944-99771EFDEDC8".Sha256()) },
                     AllowedGrantTypes = GrantTypes.Code,
                     RequirePkce = false,
                     AllowOfflineAccess = true,
@@ -46,7 +46,7 @@ namespace API.Identity.Models
                         User
                     },
                     RedirectUris={ "http://localhost:3000/signin-oidc" },
-                    PostLogoutRedirectUris = { "https://localhost:7176/signout-callback-oidc " }
+                    PostLogoutRedirectUris = { "http://localhost:3000/signout-oidc" }
                 }
             };
     }

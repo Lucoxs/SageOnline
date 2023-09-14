@@ -1,52 +1,45 @@
 @page
 @model UI.Pages.Login.Index
 
-<div class="login-page">
+<div class="containerClass">
 
     <partial name="_ValidationSummary" />
 
-    <div class="row">
+    <div class="subContainerClass">
+        <img class="imgClass" src="~/img/sage-logo.png" alt="Logo sage" />
+        <h1>
+            Connexion
+        </h1>
+        <form asp-page="/Account/Login/Index">
+            <input type="hidden" asp-for="Input.ReturnUrl" />
 
-        @if (Model.View.EnableLocalLogin)
-        {
-            <div class="col-sm-3"></div>
-            <div class="col-sm-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Se connecter</h2>
-                    </div>
+            <div class="form-groups">
+                <label asp-for="Input.Username" class="labelClass">
+                    Adresse e-mail
+                </label>
+                <input class="inputClass" placeholder="Username" asp-for="Input.Username" autofocus>
+            </div>
 
-                    <div class="card-body">
-                        <form asp-page="/Account/Login/Index">
-                            <input type="hidden" asp-for="Input.ReturnUrl" />
-
-                            <div class="form-group">
-                                <label asp-for="Input.Username">Email</label>
-                                <input class="form-control" placeholder="Username" asp-for="Input.Username" autofocus>
-                            </div>
-                            <div class="form-group">
-                                <label asp-for="Input.Password">Mot de passe</label>
-                                <input type="password" class="form-control" placeholder="Password" asp-for="Input.Password" autocomplete="off">
-                            </div>
+            <br />
+            <div class="form-groups">
+                <label asp-for="Input.Password" class="labelClass">
+                    Mot de passe
+                </label>
+                <input type="password" class="inputClass" placeholder="Password" asp-for="Input.Password" autocomplete="off">
+            </div>
                             
-                            @if (Model.View.AllowRememberLogin)
-                            {
-                                <div class="form-group">
-                                    <div class="form-check">
-                                        <input class="form-check-input" asp-for="Input.RememberLogin">
-                                        <label class="form-check-label" asp-for="Input.RememberLogin">
-                                            Se souvenir de moi
-                                        </label>
-                                    </div>
-                                </div>
-                            }
-                            
-                            <button class="btn btn-primary" name="Input.Button" value="login">Connexion</button>
-                        </form>
+            @if (Model.View.AllowRememberLogin)
+            {
+                <div class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="Input.RememberLogin">
+                        <label class="form-check-label" asp-for="Input.RememberLogin">
+                            Se souvenir de moi
+                        </label>
                     </div>
                 </div>
-            </div>
-            <div class="col-sm-3"></div>
-        }
+            }
+            <button class="buttonClass" name="Input.Button" value="login">Connexion</button>
+        </form>
     </div>
 </div>

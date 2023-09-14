@@ -70,6 +70,8 @@ namespace API.Identity.Services
                 _dbContext.Companies.Add(company);
                 _dbContext.SaveChanges();
             }
+            else
+                company = _dbContext.Companies.First(x => x.Name == company.Name);
 
             User superAdminUser = new()
             {
@@ -96,6 +98,33 @@ namespace API.Identity.Services
                 _userManager.AddClaimsAsync(superAdminUser, new Claim[]
                 {
                      new Claim(JwtClaimTypes.Name, superAdminUser.UserName),
+                     new Claim(JwtClaimTypes.Role, Config.SuperAdmin)
+                }).GetAwaiter().GetResult();
+            }
+
+            User superAdmin2 = new()
+            {
+                Email = "strohl@gmail.com",
+                NormalizedEmail = "strohl@gmail.com".ToUpper(),
+                LastName = "Strohl",
+                FirstName = "Luc",
+                UserName = "Strohl".Replace(" ", "_"),
+                NormalizedUserName = "Strohl".Replace(" ", "_").ToUpper(),
+                EmailConfirmed = true,
+                PhoneNumber = "0102030405",
+                Company = company
+            };
+
+            if (_userManager.Users.FirstOrDefault(x => x.Email == superAdmin2.Email) == null)
+            {
+                var t = _userManager.CreateAsync(superAdmin2/*, "Admin123*"*/).GetAwaiter().GetResult();
+                _userManager.AddToRoleAsync(superAdmin2, Config.User).GetAwaiter().GetResult();
+                _userManager.AddToRoleAsync(superAdmin2, Config.OfflineAccess).GetAwaiter().GetResult();
+                _userManager.AddToRoleAsync(superAdmin2, Config.OpenId).GetAwaiter().GetResult();
+
+                _userManager.AddClaimsAsync(superAdmin2, new Claim[]
+                {
+                     new Claim(JwtClaimTypes.Name, superAdmin2.UserName),
                      new Claim(JwtClaimTypes.Role, Config.SuperAdmin)
                 }).GetAwaiter().GetResult();
             }

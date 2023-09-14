@@ -8,7 +8,7 @@ namespace API.Identity.Models
     {
         [Key]
         [Column("co_id")]
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         [Column("co_name")]
         [MaxLength(255)]
@@ -77,6 +77,6 @@ namespace API.Identity.Models
         [MaxLength(255)]
         public int MaxUsers { get; set; } = 1;
 
-        public ICollection<User> Users { get; set; } = new List<User>();
+        public ICollection<User> Users { get; } = new List<User>();
     }
 }

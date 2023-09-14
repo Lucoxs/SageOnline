@@ -18,7 +18,7 @@ namespace API.Identity.Context
 
             modelBuilder.Entity<Company>()
                 .HasMany(x => x.Users)
-                .WithOne(x => x.Company)
+                .WithOne(y => y.Company)
                 .HasForeignKey("co_id")
                 .IsRequired();
         }

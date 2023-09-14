@@ -37,3 +37,70 @@
 .grants-page .card label {
   font-weight: bold;
 }
+
+.containerClass {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: rgba(234, 238, 240, 1);
+}
+
+.subContainerClass {
+    text-align: center;
+    margin: 0 auto;
+    width: 400px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 12px 20px;
+    margin: auto;
+    background-color: #fff;
+    text-align: left;
+}
+
+.LinkStyled {
+    margin: auto 10px;
+}
+
+.imgClass {
+    display: block;
+    margin: 0 auto;
+}
+
+.spanClass {
+    color: rgb(72, 162, 121);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.labelClass {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+    text-align: left;
+}
+
+.inputClass {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 12px 20px;
+    margin: 8px 0;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.buttonClass {
+    background-color: rgb(0, 126, 69);
+    border: none;
+    border-radius: 25px;
+    color: white;
+    padding: 12px 20px;
+    margin: 8px 0;
+    width: 100%;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.buttonClass:hover {
+    background-color: rgb(0, 101, 55);
+}
