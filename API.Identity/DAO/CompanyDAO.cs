@@ -13,7 +13,7 @@ namespace API.Identity.DAO
             return await context.Companies.Include(x => x.Users).ToListAsync();
         }
 
-        public static async Task<Company?> GetCompany(AppDbContext context, Guid id)
+        public static async Task<Company?> GetCompany(AppDbContext context, int id)
         {
             if (context.Companies == null)
                 return null;

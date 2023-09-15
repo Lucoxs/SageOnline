@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace API.Identity.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -26,29 +26,32 @@ namespace API.Identity.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AspNetUsers",
+                name: "co_company",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
+                    co_id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    co_name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    co_activity = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    co_legal_status = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    co_capital = table.Column<double>(type: "float", nullable: true),
+                    co_address = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    co_complement = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    co_zip = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    co_city = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    co_region = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    co_country = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    co_siret = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    co_vat_identifier = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    co_naf_code = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    co_website = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    co_phone = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    co_email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    co_max_users = table.Column<int>(type: "int", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                    table.PrimaryKey("PK_co_company", x => x.co_id);
                 });
 
             migrationBuilder.CreateTable(
@@ -69,6 +72,40 @@ namespace API.Identity.Migrations
                         column: x => x.RoleId,
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AspNetUsers",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    us_firstname = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    us_lastname = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    co_id = table.Column<int>(type: "int", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetUsers_co_company_co_id",
+                        column: x => x.co_id,
+                        principalTable: "co_company",
+                        principalColumn: "co_id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -190,6 +227,11 @@ namespace API.Identity.Migrations
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_co_id",
+                table: "AspNetUsers",
+                column: "co_id");
+
+            migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
@@ -220,6 +262,9 @@ namespace API.Identity.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "co_company");
         }
     }
 }

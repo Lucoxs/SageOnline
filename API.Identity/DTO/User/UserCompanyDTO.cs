@@ -5,7 +5,7 @@ namespace API.Identity.DTO.User
 {
     public class UserCompanyDTO
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
 
         [JsonProperty(nameof(Name))]
         public string Name { get; set; } = default!;

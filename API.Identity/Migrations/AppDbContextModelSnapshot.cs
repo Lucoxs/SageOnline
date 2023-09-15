@@ -24,10 +24,12 @@ namespace API.Identity.Migrations
 
             modelBuilder.Entity("API.Identity.Models.Company", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("int")
                         .HasColumnName("co_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Activity")
                         .HasMaxLength(255)
@@ -139,11 +141,13 @@ namespace API.Identity.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("FirstName")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)")
                         .HasColumnName("us_firstname");
 
                     b.Property<string>("LastName")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)")
                         .HasColumnName("us_lastname");
@@ -181,8 +185,8 @@ namespace API.Identity.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<Guid>("co_id")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("co_id")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

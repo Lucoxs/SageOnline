@@ -4,7 +4,7 @@ namespace API.Identity.DTO.Company
 {
     public class CompanyDTO
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
         public string? Activity { get; set; }
         public string? LegalStatus { get; set; }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Identity.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230906191047_addCompanyTable")]
-    partial class addCompanyTable
+    [Migration("20230915070302_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,12 +27,12 @@ namespace API.Identity.Migrations
 
             modelBuilder.Entity("API.Identity.Models.Company", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
+                        .HasColumnType("int")
                         .HasColumnName("co_id");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Activity")
                         .HasMaxLength(255)
@@ -143,17 +143,14 @@ namespace API.Identity.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("FirstConnection")
-                        .HasMaxLength(255)
-                        .HasColumnType("bit")
-                        .HasColumnName("us_firstconnection");
-
                     b.Property<string>("FirstName")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)")
                         .HasColumnName("us_firstname");
 
                     b.Property<string>("LastName")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)")
                         .HasColumnName("us_lastname");
@@ -191,8 +188,8 @@ namespace API.Identity.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<long>("co_id")
-                        .HasColumnType("bigint");
+                    b.Property<int>("co_id")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

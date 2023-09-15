@@ -23,7 +23,7 @@ namespace API.Identity.DTO.User
         public string? Role { get; set; }
 
         [JsonProperty("company_id")]
-        public Guid? CompanyId { get; set; }
+        public int CompanyId { get; set; }
 
         public UserDTO()
         {

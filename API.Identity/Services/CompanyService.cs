@@ -21,7 +21,7 @@ namespace API.Identity.Services
             return await CompanyDAO.GetCompanies(_dbContext);
         }
 
-        public async Task<Company?> GetCompany(Guid id)
+        public async Task<Company?> GetCompany(int id)
         {
             return await CompanyDAO.GetCompany(_dbContext, id);
         }

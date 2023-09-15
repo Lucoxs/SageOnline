@@ -45,7 +45,7 @@ namespace API.Identity.Controllers
 
         // GET: api/v1/Companies/5
         [HttpGet("{company_id}")]
-        public async Task<ActionResult<CompanyUserDTO>> GetCompany(Guid company_id)
+        public async Task<ActionResult<CompanyUserDTO>> GetCompany(int company_id)
         {
             try
             {
@@ -71,7 +71,7 @@ namespace API.Identity.Controllers
                 if (string.IsNullOrEmpty(coid))
                     return NotFound();
 
-                return await GetCompany(Guid.Parse(coid));
+                return await GetCompany(int.Parse(coid));
             }
             catch (Exception ex)
             {
@@ -81,7 +81,7 @@ namespace API.Identity.Controllers
 
         // PUT: api/v1/Companies/1
         [HttpPut("{company_id}")]
-        public async Task<IActionResult> PutCompany(Guid company_id, [FromBody] CompanyDTO companyDTO)
+        public async Task<IActionResult> PutCompany(int company_id, [FromBody] CompanyDTO companyDTO)
         {
             try
             {
@@ -123,7 +123,7 @@ namespace API.Identity.Controllers
                 if (string.IsNullOrEmpty(coid))
                     return NotFound();
 
-                return await PutCompany(Guid.Parse(coid), companyDTO);
+                return await PutCompany(int.Parse(coid), companyDTO);
             }
             catch (Exception ex)
             {
@@ -156,7 +156,7 @@ namespace API.Identity.Controllers
         // DELETE: api/v1/Companies/1
         [HttpDelete("{company_id}")]
         [SwaggerResponse(204)]
-        public async Task<IActionResult> DeleteCompany(Guid company_id)
+        public async Task<IActionResult> DeleteCompany(int company_id)
         {
             try
             {

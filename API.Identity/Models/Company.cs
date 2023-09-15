@@ -8,7 +8,7 @@ namespace API.Identity.Models
     {
         [Key]
         [Column("co_id")]
-        public Guid Id { get; set; }
+        public int Id { get; set; }
 
         [Column("co_name")]
         [MaxLength(255)]

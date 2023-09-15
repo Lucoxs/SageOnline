@@ -28,7 +28,7 @@ namespace API.Identity.Controllers
 
         //TODO : super_admin
         [HttpGet("api/v1/Companies/{company_id}/[controller]")]
-        public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers(Guid company_id)
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers(int company_id)
         {
             try
             {
@@ -63,7 +63,7 @@ namespace API.Identity.Controllers
                 if (string.IsNullOrWhiteSpace(company_id))
                     throw new Exception("Invalid headers");
 
-                return await GetUsers(Guid.Parse(company_id));
+                return await GetUsers(int.Parse(company_id));
             }
             catch (Exception ex)
             {
@@ -73,7 +73,7 @@ namespace API.Identity.Controllers
 
         //TODO : super_admin
         [HttpGet("api/v1/Companies/{company_id}/[controller]/{user_id}")]
-        public async Task<ActionResult<UserDTO>> GetUser(Guid company_id, string user_id)
+        public async Task<ActionResult<UserDTO>> GetUser(int company_id, string user_id)
         {
             try
             {
@@ -107,7 +107,7 @@ namespace API.Identity.Controllers
                 if (string.IsNullOrWhiteSpace(user_id) || string.IsNullOrWhiteSpace(company_id))
                     throw new Exception("Invalid headers");
 
-                return await GetUser(Guid.Parse(company_id), user_id);
+                return await GetUser(int.Parse(company_id), user_id);
             }
             catch (Exception ex)
             {
@@ -122,7 +122,7 @@ namespace API.Identity.Controllers
             try
             {
                 var company_id = Request.Headers.GetCommaSeparatedValues("company_id")?.FirstOrDefault();
-                var companyId = Guid.Parse(company_id);
+                var companyId = int.Parse(company_id);
                 if (companyId != userNewDTO.CompanyId)
                     throw new Exception("invalid request");
 
@@ -162,7 +162,7 @@ namespace API.Identity.Controllers
                 if (string.IsNullOrWhiteSpace(user_id) || string.IsNullOrWhiteSpace(company_id))
                     return NotFound("company or user doesn't exist");
 
-                var companyId = Guid.Parse(company_id);
+                var companyId = int.Parse(company_id);
                 if (companyId != userDTO.CompanyId || user_id != userDTO.Id)
                     return BadRequest("invalid request");
 
@@ -194,7 +194,7 @@ namespace API.Identity.Controllers
         //TODO : admin
         [HttpDelete("api/v1/Companies/{company_id}/[controller]/{user_id}")]
         [SwaggerResponse(204)]
-        public async Task<IActionResult> DeleteUser(Guid company_id, string user_id)
+        public async Task<IActionResult> DeleteUser(int company_id, string user_id)
         {
             try
             {
