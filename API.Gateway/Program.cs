@@ -58,7 +58,6 @@ app.MapControllers();
 
 var configuration = new OcelotPipelineConfiguration
 {
-
     PreAuthenticationMiddleware = async (context, next) =>
     {
         await PreAuthenticationMiddleware(context, next);
@@ -66,8 +65,6 @@ var configuration = new OcelotPipelineConfiguration
 };
 
 await app.UseOcelot(configuration);
-/*
-app.UseCors("CorsPolicy");*/
 
 app.Run();
 

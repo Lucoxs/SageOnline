@@ -1,0 +1,15 @@
+FROM mcr.microsoft.com/mssql/server:2019-latest
+
+COPY ./dockerfiles/entrypoint_documents.sh ./dockerfiles/entrypoint_documents.sh
+COPY ./dockerfiles/SqlCmdScript_Documents.sql ./dockerfiles/SqlCmdScript_Documents.sql
+COPY ./dockerfiles/SqlCmdStartup_Documents.sh ./dockerfiles/SqlCmdStartup_Documents.sh
+
+ENV ACCEPT_EULA=Y
+ENV MSSQL_SA_PASSWORD=Pass@word
+
+CMD  /bin/bash ./entrypoint_documents.sh
+
+EXPOSE 1433
+
+LABEL author=lucoxs
+LABEL version=1.0

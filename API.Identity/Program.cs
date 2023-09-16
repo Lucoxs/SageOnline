@@ -22,46 +22,6 @@ internal class Program
             options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConfig"));
         });
 
-        /*Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .WriteTo.Console()
-                .CreateLogger();
-
-        builder.Services.AddSingleton(Log.Logger);*/
-
-        /*builder.Services.AddSingleton<ICorsPolicyService>((container) => {
-            var logger = container.GetRequiredService<ILogger<DefaultCorsPolicyService>>();
-            return new DefaultCorsPolicyService(logger)
-            {
-                AllowedOrigins = { "http://localhost:3000/" }
-            };
-        });*/
-
-        /*builder.Services.AddSingleton<ICorsPolicyService>((container) =>
-        {
-            var logger = container.GetRequiredService<ILogger<DefaultCorsPolicyService>>();
-            return new DefaultCorsPolicyService(logger)
-            {
-                AllowAll = true
-            };
-        });
-*/
-        /*builder.Services.AddCors(options =>
-        {
-            options.AddPolicy("CorsPolicy",
-                builder => builder.AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader());
-        });*/
-
-        /*builder.Services.AddSingleton<ICorsPolicyService>((container) => {
-            var logger = container.GetRequiredService<ILogger<DefaultCorsPolicyService>>();
-            return new DefaultCorsPolicyService(logger)
-            {
-                AllowAll = true
-            };
-        });*/
-
         builder.Services.AddIdentity<User, IdentityRole>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();

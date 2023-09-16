@@ -1,0 +1,35 @@
+version: "3.9"
+
+volumes:
+    database_volume:
+
+networks:
+    backend:
+        name: "mssql-documents"
+
+services:
+    db-documents:
+        container_name: mssql-documents
+        image: lucoxs/sol_mssql_documents:latest
+        ports:
+            - 1446:1433
+        environment:
+            MSSQL_SA_PASSWORD: Pass@word
+            ACCEPT_EULA: Y
+        networks:
+            - backend
+        volumes:
+            - database_volume:/var/opt/mssql
+        restart: always
+
+    api-documents:
+        container_name: api-documents
+        depends_on:
+            - db-documents
+        image: lucoxs/sol_api_documents:latest
+        environment:
+            ConnectionString: Server=localhost;User=sa;Password=Pass@word;Database=SageOnlineDocuments
+        ports:
+            - 7002:7002
+        networks:
+            - backend

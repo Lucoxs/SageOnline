@@ -1,0 +1,27 @@
+FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
+WORKDIR /app
+EXPOSE 80 443
+
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+WORKDIR /src
+
+COPY ["./API.Documents","./API.Documents"]
+
+RUN dotnet restore "./API.Documents/API.Documents.csproj"
+
+COPY . .
+
+WORKDIR "/src/API.Documents"
+RUN dotnet build "API.Documents.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "API.Documents.csproj" -c Release -o /app/publish
+
+FROM base AS final 
+WORKDIR /app
+COPY --from=publish /app/publish .
+
+ENTRYPOINT [ "dotnet", "API.Documents.dll" ]
+
+LABEL author=lucoxs
+LABEL version=1.0
