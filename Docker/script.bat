@@ -11,8 +11,4 @@ docker image push lucoxs/sol_api_identity:latest
 docker build -f Docker/dockerfile.API.Gateway -t lucoxs/sol_api_gateway:latest .
 docker image push lucoxs/sol_api_gateway:latest
 
-cd Docker
-
-docker-compose up -d
-
 pause
