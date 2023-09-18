@@ -25,22 +25,10 @@ internal class Program
         builder.Services.AddControllersWithViews();
         builder.Services.AddSwaggerGen();
 
-        Log.Debug("IdentityConfig");
-        var server = builder.Configuration.GetValue<string>("DB_SERVER");
-        var port = builder.Configuration.GetValue<string>("DB_PORT");
-        var database = builder.Configuration.GetValue<string>("DB_DATABASE");
-        var user = builder.Configuration.GetValue<string>("DB_USER");
-        var password = builder.Configuration.GetValue<string>("DB_PASS");
-        var connectionString = $"Server={server},{port};User={user};Password={password};Database={database};Encrypt=False";
-
-        if (builder.Environment.IsDevelopment())
-            connectionString = "Server=(localdb)\\mssqllocaldb;Database=IdentityConfig;Trusted_Connection=True;";
-
         builder.Services.AddDbContext<AppDbContext>(options =>
         {
-            options.UseSqlServer(connectionString);
+            options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConfig"));
         });
-        Log.Debug(connectionString);
 
         builder.Services.AddDataProtection()
             .PersistKeysToDbContext<AppDbContext>();
@@ -75,7 +63,6 @@ internal class Program
 
         builder.Services.AddRazorPages();
 
-        Log.Debug("Build");
         var app = builder.Build();
         
         app.UseCors(x => x
@@ -93,6 +80,7 @@ internal class Program
         {
             app.UseSwagger();
             app.UseSwaggerUI();
+            SeedData();
         }
 
         app.UseHttpsRedirection();
@@ -109,7 +97,6 @@ internal class Program
             pattern: "{controller=Home}/{action=Index}/{id?}");
 
         app.Run();
-        Log.Debug("Run");
 
         void SeedData()
         {

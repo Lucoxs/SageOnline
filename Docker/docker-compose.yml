@@ -3,8 +3,9 @@ version: "3.9"
 networks:
     backend:
     products:
-    identity:
+    # identity:
     documents:
+    thirdAccounts:
 
 services:
     api-gateway:
@@ -30,102 +31,134 @@ services:
         environment:
             MSSQL_SA_PASSWORD: Pass@word
             ACCEPT_EULA: Y
-        networks:
-            - identity
+        # networks:
+        #     - identity
         volumes:
-            - C:/Users/lstro/source/docker/SageOnline/volumes/identity/mssql/data:/var/opt/mssql/data
-            - C:/Users/lstro/source/docker/SageOnline/volumes/identity/mssql/log:/var/opt/mssql/log
-            - C:/Users/lstro/source/docker/SageOnline/volumes/identity/mssql/secrets:/var/opt/mssql/secrets
+            - ${USERPROFILE}/SageOnline/volumes/identity/mssql/data:/var/opt/mssql/data
+            - ${USERPROFILE}/SageOnline/volumes/identity/mssql/log:/var/opt/mssql/log
+            - ${USERPROFILE}/SageOnline/volumes/identity/mssql/secrets:/var/opt/mssql/secrets
         restart: always
 
-    api-identity:
-        container_name: api-identity
-        depends_on:
-            db-identity:
-                condition: service_started
-        image: lucoxs/sol_api_identity:latest
-        environment:
-            ASPNETCORE_URLS: "https://+"
-            ASPNETCORE_HTTPS_PORT: 7001
-            ASPNETCORE_Kestrel__Certificates__Default__Password: "Pass@word"
-            ASPNETCORE_Kestrel__Certificates__Default__Path: "/https/aspnetapp.pfx"
-            DB_SERVER: db-identity
-            DB_PORT: 1433
-            DB_DATABASE: IdentityConfig
-            DB_USER: sa
-            DB_PASS: Pass@word
-        ports:
-            - 7001:443
-        volumes:
-            - ${USERPROFILE}\\.aspnet\\https:/https/
-        networks:
-            - identity
-            - backend
-        restart: on-failure:3
+    # api-identity:
+    #     container_name: api-identity
+    #     depends_on:
+    #         db-identity:
+    #             condition: service_started
+    #     image: lucoxs/sol_api_identity:latest
+    #     environment:
+    #         ASPNETCORE_URLS: "https://+"
+    #         ASPNETCORE_HTTPS_PORT: 7001
+    #         ASPNETCORE_Kestrel__Certificates__Default__Password: "Pass@word"
+    #         ASPNETCORE_Kestrel__Certificates__Default__Path: "/https/aspnetapp.pfx"
+    #         DB_SERVER: db-identity
+    #         DB_PORT: 1433
+    #         DB_DATABASE: IdentityConfig
+    #         DB_USER: sa
+    #         DB_PASS: Pass@word
+    #     ports:
+    #         - 7001:443
+    #     volumes:
+    #         - ${USERPROFILE}\\.aspnet\\https:/https/
+    #     networks:
+    #         - identity
+    #         - backend
+    #     restart: on-failure:3
 
-    db-products:
-        container_name: db-products
-        image: mcr.microsoft.com/mssql/server:2019-latest
-        ports:
-            - 1445:1433
-        environment:
-            MSSQL_SA_PASSWORD: Pass@word
-            ACCEPT_EULA: Y
-        networks:
-            - products
-        volumes:
-            - C:/Users/lstro/source/docker/SageOnline/volumes/products/mssql/data:/var/opt/mssql/data
-            - C:/Users/lstro/source/docker/SageOnline/volumes/products/mssql/log:/var/opt/mssql/log
-            - C:/Users/lstro/source/docker/SageOnline/volumes/products/mssql/secrets:/var/opt/mssql/secrets
+    # db-products:
+    #     container_name: db-products
+    #     image: mcr.microsoft.com/mssql/server:2019-latest
+    #     ports:
+    #         - 1445:1433
+    #     environment:
+    #         MSSQL_SA_PASSWORD: Pass@word
+    #         ACCEPT_EULA: Y
+    #     networks:
+    #         - products
+    #     volumes:
+    #         - ${USERPROFILE}/SageOnline/volumes/products/mssql/data:/var/opt/mssql/data
+    #         - ${USERPROFILE}/SageOnline/volumes/products/mssql/log:/var/opt/mssql/log
+    #         - ${USERPROFILE}/SageOnline/volumes/products/mssql/secrets:/var/opt/mssql/secrets
 
-    api-products:
-        container_name: api-products
-        depends_on:
-            - db-products
-        image: greytsu/sol_api_products:latest
-        ports:
-            - 3030:8080
-        environment:
-            DB_SERVER: db-products
-            DB_PORT: 1445
-            DB_USER: sa
-            DB_PASS: Pass@word
-            DB_DATABASE: sol_products
-            LOG_LEVEL: 1
-        networks:
-            - products
-            - backend
+    # api-products:
+    #     container_name: api-products
+    #     depends_on:
+    #         - db-products
+    #     image: greytsu/sol_api_products:latest
+    #     ports:
+    #         - 3030:8080
+    #     environment:
+    #         DB_SERVER: db-products
+    #         DB_PORT: 1445
+    #         DB_USER: sa
+    #         DB_PASS: Pass@word
+    #         DB_DATABASE: sol_products
+    #         LOG_LEVEL: 1
+    #     networks:
+    #         - products
+    #         - backend
     
-    db-documents:
-        container_name: db-documents
-        image: mcr.microsoft.com/mssql/server:2019-latest
-        ports:
-            - 1447:1433
-        environment:
-            MSSQL_SA_PASSWORD: Pass@word
-            ACCEPT_EULA: Y
-        networks:
-            - documents
-        volumes:
-            - C:/Users/lstro/source/docker/SageOnline/volumes/documents/mssql/data:/var/opt/mssql/data
-            - C:/Users/lstro/source/docker/SageOnline/volumes/documents/mssql/log:/var/opt/mssql/log
-            - C:/Users/lstro/source/docker/SageOnline/volumes/documents/mssql/secrets:/var/opt/mssql/secrets
-        restart: always
+    # db-documents:
+    #     container_name: db-documents
+    #     image: mcr.microsoft.com/mssql/server:2019-latest
+    #     ports:
+    #         - 1447:1433
+    #     environment:
+    #         MSSQL_SA_PASSWORD: Pass@word
+    #         ACCEPT_EULA: Y
+    #     networks:
+    #         - documents
+    #     volumes:
+    #         - ${USERPROFILE}/SageOnline/volumes/documents/mssql/data:/var/opt/mssql/data
+    #         - ${USERPROFILE}/SageOnline/volumes/documents/mssql/log:/var/opt/mssql/log
+    #         - ${USERPROFILE}/SageOnline/volumes/documents/mssql/secrets:/var/opt/mssql/secrets
+    #     restart: always
 
-    api-documents:
-        container_name: api-documents
-        depends_on:
-            db-documents:
-                condition: service_started
-        image: lucoxs/sol_api_documents:latest
-        environment:
-            DB_SERVER: db-documents
-            DB_PORT: 1447
-            DB_DATABASE: SageOnlineDocuments
-            DB_USER: sa
-            DB_PASS: Pass@word
-        ports:
-            - 7002:80
-        networks:
-            - documents
-            - backend
+    # api-documents:
+    #     container_name: api-documents
+    #     depends_on:
+    #         db-documents:
+    #             condition: service_started
+    #     image: lucoxs/sol_api_documents:latest
+    #     environment:
+    #         DB_SERVER: db-documents
+    #         DB_PORT: 1447
+    #         DB_DATABASE: SageOnlineDocuments
+    #         DB_USER: sa
+    #         DB_PASS: Pass@word
+    #     ports:
+    #         - 7002:80
+    #     networks:
+    #         - documents
+    #         - backend
+
+    # db-thirdAccounts:
+    #     container_name: db-thirdAccounts
+    #     image: mcr.microsoft.com/mssql/server:2019-latest
+    #     ports:
+    #         - 1433:1433
+    #     environment:
+    #         - ACCEPT_EULA=Y
+    #         - SA_PASSWORD=Seb12345
+    #     networks:
+    #         - thirdAccounts
+    #     volumes:
+    #         - ${USERPROFILE}/SageOnline/volumes/third_account/mssql/data:/var/opt/mssql/data
+    #         - ${USERPROFILE}/SageOnline/volumes/third_account/mssql/log:/var/opt/mssql/log
+    #         - ${USERPROFILE}/SageOnline/volumes/third_account/mssql/secrets:/var/opt/mssql/secrets
+
+    # api-thirdAccounts:
+    #     container_name: api-thirdAccounts
+    #     depends_on:
+    #         - db-thirdAccounts
+    #     image: sebtex/sol_api_third_account:latest
+    #     ports:
+    #         - 3031:8081
+    #     environment:
+    #         DB_SERVER: db-thirdAccounts
+    #         DB_PORT: 1433
+    #         DB_USER: sa
+    #         DB_PASS: Seb12345
+    #         DB_DATABASE: third_account
+    #     networks:
+    #         - thirdAccounts
+    #         - backend

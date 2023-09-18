@@ -1,5 +1,6 @@
 ﻿using API.Identity.Interfaces;
 using Azure.Core;
+using Duende.IdentityServer.Models;
 using IdentityModel.Client;
 using Newtonsoft.Json;
 using Serilog;
@@ -20,34 +21,29 @@ namespace API.Identity.Services
             Log.Debug(_authority);
         }
 
-        public async Task<HttpResponseMessage> SignIn(string client_id, string code)
+        public async Task<TokenResponse> SignIn(string client_id, string code)
         {
-            Log.Information(client_id);
-            Log.Information(_configuration[$"{client_id}:Secret"]);
-            Log.Information(code);
-            using FormUrlEncodedContent content = new(new List<KeyValuePair<string, string>>()
+            return await _httpClient.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
             {
-                new("client_id", client_id),
-                new("client_secret", _configuration[$"{client_id}:Secret"]),
-                new("grant_type", "authorization_code"),
-                new("code", code),
-                new("redirect_uri", "http://localhost:3000/signin-oidc"),
+                Address = $"{_authority}connect/token",
+
+                ClientId = client_id,
+                ClientSecret = _configuration[$"{client_id}:Secret"],
+
+                Code = code,
+                RedirectUri = "http://localhost:3000/signin-oidc"
             });
-            var response = await _httpClient.PostAsync($"{_authority}connect/token", content);
-            Log.Information(response.StatusCode.ToString());
-            return response;
         }
 
-        public async Task<HttpResponseMessage> RefreshToken(string client_id, string refresh_token)
+        public async Task<TokenResponse> RefreshToken(string client_id, string refresh_token)
         {
-            using FormUrlEncodedContent content = new(new List<KeyValuePair<string, string>>()
+            return await _httpClient.RequestRefreshTokenAsync(new()
             {
-                new("client_id", client_id),
-                new("client_secret", _configuration[$"{client_id}:Secret"]),
-                new("grant_type", "refresh_token"),
-                new("refresh_token", refresh_token),
+                Address = $"{_authority}connect/token",
+                ClientId = client_id,
+                ClientSecret = _configuration[$"{client_id}:Secret"],
+                RefreshToken = refresh_token
             });
-            return await _httpClient.PostAsync($"{_authority}connect/token", content);
         }
 
         public async Task<UserInfoResponse> GetUserInfoAsync(string token)

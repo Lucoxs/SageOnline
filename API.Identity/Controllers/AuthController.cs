@@ -28,23 +28,11 @@ namespace API.Identity.Controllers
         {
             try
             {
-                Log.Debug("authhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
-                Log.Debug(client_id);
-                Log.Debug(code);
                 var response = await _authService.SignIn(client_id, code);
-                var responseString = await response.Content.ReadAsStringAsync();
-                Log.Debug(response.IsSuccessStatusCode.ToString());
-                Log.Debug(responseString);
-                if (response.IsSuccessStatusCode)
-                    return StatusCode((int)response.StatusCode, JsonConvert.DeserializeObject<Token>(responseString));
-                else
-                    return StatusCode((int)response.StatusCode, JsonConvert.DeserializeObject<ErrorToken>(responseString));
+                return StatusCode((int)response.HttpStatusCode, response.Json);
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
-                Log.Error(ex.StackTrace ?? "");
-                Log.Error(ex.InnerException?.Message ?? "");
                 return BadRequest(ex.Message);
             }
         }
@@ -55,11 +43,7 @@ namespace API.Identity.Controllers
             try
             {
                 var response = await _authService.RefreshToken(client_id, refresh_token);
-                var responseString = await response.Content.ReadAsStringAsync();
-                if (response.IsSuccessStatusCode)
-                    return StatusCode((int)response.StatusCode, JsonConvert.DeserializeObject<Token>(responseString));
-                else
-                    return StatusCode((int)response.StatusCode, JsonConvert.DeserializeObject<ErrorToken>(responseString));
+                return StatusCode((int)response.HttpStatusCode, response.Json);
             }
             catch (Exception ex)
             {
