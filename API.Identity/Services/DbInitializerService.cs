@@ -95,11 +95,11 @@ namespace API.Identity.Services
                 _userManager.AddToRoleAsync(superAdminUser, Config.OfflineAccess).GetAwaiter().GetResult();
                 _userManager.AddToRoleAsync(superAdminUser, Config.OpenId).GetAwaiter().GetResult();
 
-                _userManager.AddClaimsAsync(superAdminUser, new Claim[]
+               /* _userManager.AddClaimsAsync(superAdminUser, new Claim[]
                 {
                      new Claim(JwtClaimTypes.Name, superAdminUser.UserName),
                      new Claim(JwtClaimTypes.Role, Config.SuperAdmin)
-                }).GetAwaiter().GetResult();
+                }).GetAwaiter().GetResult();*/
             }
 
             User superAdmin2 = new()
@@ -122,11 +122,11 @@ namespace API.Identity.Services
                 _userManager.AddToRoleAsync(superAdmin2, Config.OfflineAccess).GetAwaiter().GetResult();
                 _userManager.AddToRoleAsync(superAdmin2, Config.OpenId).GetAwaiter().GetResult();
 
-                _userManager.AddClaimsAsync(superAdmin2, new Claim[]
+                /*_userManager.AddClaimsAsync(superAdmin2, new Claim[]
                 {
                      new Claim(JwtClaimTypes.Name, superAdmin2.UserName),
                      new Claim(JwtClaimTypes.Role, Config.SuperAdmin)
-                }).GetAwaiter().GetResult();
+                }).GetAwaiter().GetResult();*/
             }
 
             User adminUser = new()
@@ -150,11 +150,11 @@ namespace API.Identity.Services
                 _userManager.AddToRoleAsync(adminUser, Config.OfflineAccess).GetAwaiter().GetResult();
                 _userManager.AddToRoleAsync(adminUser, Config.OpenId).GetAwaiter().GetResult();
 
-                _userManager.AddClaimsAsync(adminUser, new Claim[]
+                /*_userManager.AddClaimsAsync(adminUser, new Claim[]
                 {
                      new Claim(JwtClaimTypes.Name, adminUser.UserName),
                      new Claim(JwtClaimTypes.Role, Config.SuperAdmin)
-                }).GetAwaiter().GetResult();
+                }).GetAwaiter().GetResult();*/
             }
         }
     }

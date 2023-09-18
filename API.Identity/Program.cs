@@ -3,8 +3,11 @@ using API.Identity.Interfaces;
 using API.Identity.Models;
 using API.Identity.Services;
 using Duende.IdentityServer.Services;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using System.Net;
 
 internal class Program
 {
@@ -12,15 +15,35 @@ internal class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Console()
+            .CreateLogger();
+
         builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 
         builder.Services.AddControllersWithViews();
         builder.Services.AddSwaggerGen();
 
+        Log.Debug("IdentityConfig");
+        var server = builder.Configuration.GetValue<string>("DB_SERVER");
+        var port = builder.Configuration.GetValue<string>("DB_PORT");
+        var database = builder.Configuration.GetValue<string>("DB_DATABASE");
+        var user = builder.Configuration.GetValue<string>("DB_USER");
+        var password = builder.Configuration.GetValue<string>("DB_PASS");
+        var connectionString = $"Server={server},{port};User={user};Password={password};Database={database};Encrypt=False";
+
+        if (builder.Environment.IsDevelopment())
+            connectionString = "Server=(localdb)\\mssqllocaldb;Database=IdentityConfig;Trusted_Connection=True;";
+
         builder.Services.AddDbContext<AppDbContext>(options =>
         {
-            options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConfig"));
+            options.UseSqlServer(connectionString);
         });
+        Log.Debug(connectionString);
+
+        builder.Services.AddDataProtection()
+            .PersistKeysToDbContext<AppDbContext>();
 
         builder.Services.AddIdentity<User, IdentityRole>()
             .AddEntityFrameworkStores<AppDbContext>()
@@ -41,7 +64,6 @@ internal class Program
             .AddAspNetIdentity<User>()
             .AddCorsPolicyService<CorsPolicyService>();
 
-        /*builder.Services.AddScoped<ICorsPolicyService, CorsPolicyService>();*/
         builder.Services.AddScoped<IDbInitializerService, DbInitializerService>();
         builder.Services.AddScoped<IProfileService, ProfileService>();
         builder.Services.AddScoped<IAuthService, AuthService>();
@@ -53,6 +75,7 @@ internal class Program
 
         builder.Services.AddRazorPages();
 
+        Log.Debug("Build");
         var app = builder.Build();
         
         app.UseCors(x => x
@@ -85,9 +108,8 @@ internal class Program
             name: "default",
             pattern: "{controller=Home}/{action=Index}/{id?}");
 
-        /*app.UseCors("CorsPolicy");*/
-
         app.Run();
+        Log.Debug("Run");
 
         void SeedData()
         {

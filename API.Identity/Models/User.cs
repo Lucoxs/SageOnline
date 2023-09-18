@@ -21,12 +21,12 @@ namespace API.Identity.Models
 
         public User(UserNewDTO user, Company company)
         {
-            var userName = $"{user.LastName} {user.FirstName}";
+            var userName = $"{user.LastName}_{user.FirstName}".Replace(" ", "");
 
             FirstName = user.FirstName;
             LastName = user.LastName;
             UserName = userName;
-            NormalizedEmail = userName.Replace(" ", "_").ToUpper();
+            NormalizedEmail = userName.ToUpper();
             Email = user?.Email;
             NormalizedEmail = user?.Email?.ToLower();
             PhoneNumber = user?.PhoneNumber;

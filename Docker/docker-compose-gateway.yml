@@ -1,0 +1,13 @@
+version: "3.9"
+
+networks:
+    api-network:
+
+services:
+    api-gateway:
+        container_name: api-gateway
+        image: lucoxs/sol_api_gateway:latest
+        ports:
+            - 7000:80
+        networks:
+            - api-network

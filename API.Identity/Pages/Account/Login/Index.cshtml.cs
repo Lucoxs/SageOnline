@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Primitives;
+using Serilog;
 using ApiScope = Duende.IdentityServer.Models.ApiScope;
 
 namespace UI.Pages.Login;
@@ -85,6 +86,8 @@ public class Index : PageModel
             new ParsedScopeValue("admin")
         };*/
         User? user = await _userManager.FindByEmailAsync(Input.Username);
+        Log.Debug("user?.Email ?? Input.Username");
+        Log.Debug(user?.Email ?? Input.Username);
         if (user != null)
         {
             var roles = await _userManager.GetRolesAsync(user);
@@ -105,7 +108,9 @@ public class Index : PageModel
                 var result = await _signInManager.PasswordSignInAsync(user.UserName, Input.Password, Input.RememberLogin, false);
                 if (result.Succeeded)
                 {
+                    Log.Information("login success");
                     await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id, user.FirstName, clientId: context?.Client?.ClientId));
+                    Log.Information("login success event");
 
                     // only set explicit expiration here if user chooses "remember me". 
                     // otherwise we rely upon expiration configured in cookie middleware.
@@ -128,29 +133,37 @@ public class Index : PageModel
                     // request for a local page
                     if (Url.IsLocalUrl(Input.ReturnUrl))
                     {
+                        Log.Debug($"Redirect({Input.ReturnUrl})");
                         return Redirect(Input.ReturnUrl);
                     }
                     else if (string.IsNullOrEmpty(Input.ReturnUrl))
                     {
+                        Log.Debug("Redirect(\"~/\")");
                         return Redirect("~/");
                     }
                     else
                     {
+                        Log.Error("invalid return URL");
                         // user might have clicked on a malicious link - should be logged
                         throw new Exception("invalid return URL");
                     }
                 }
+                Log.Error("signin");
+                Log.Error(LoginOptions.InvalidScopeErrorMessage);
                 await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, "invalid credentials", clientId: context?.Client.ClientId));
                 ModelState.AddModelError(string.Empty, LoginOptions.InvalidPasswordErrorMessage);
             }
             else
             {
+                Log.Error("scopes");
+                Log.Error(LoginOptions.InvalidScopeErrorMessage);
                 await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, "invalid credentials", clientId: context?.Client.ClientId));
                 ModelState.AddModelError(string.Empty, LoginOptions.InvalidScopeErrorMessage);
             }
         }
         else
         {
+            Log.Error(LoginOptions.InvalidUsernameErrorMessage);
             await _events.RaiseAsync(new UserLoginFailureEvent(Input.Username, "invalid credentials", clientId: context?.Client.ClientId));
             ModelState.AddModelError(string.Empty, LoginOptions.InvalidUsernameErrorMessage);
         }
@@ -162,6 +175,7 @@ public class Index : PageModel
 
     public void SetUserScopes(IList<string> roles)
     {
+        Log.Debug("set user scopes");
         var parsedUrl = Input.ReturnUrl.Split("?");
         var queryParams = QueryHelpers.ParseQuery(parsedUrl[1]);
         if (queryParams.ContainsKey("scope"))

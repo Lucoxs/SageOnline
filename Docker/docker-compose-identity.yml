@@ -1,0 +1,43 @@
+version: "3.9"
+
+volumes:
+    database_volume:
+
+networks:
+    db-identity-network:
+    api-network:
+
+services:
+    db-identity:
+        container_name: mssql-identity
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        ports:
+            - 1446:1433
+        environment:
+            MSSQL_SA_PASSWORD: Pass@word
+            ACCEPT_EULA: Y
+        networks:
+            - db-identity-network
+        volumes:
+            - C:/Users/lstro/source/docker/SageOnline/volumes/identity/mssql/data:/var/opt/mssql/data
+            - C:/Users/lstro/source/docker/SageOnline/volumes/identity/mssql/log:/var/opt/mssql/log
+            - C:/Users/lstro/source/docker/SageOnline/volumes/identity/mssql/secrets:/var/opt/mssql/secrets
+        restart: always
+
+    api-identity:
+        container_name: api-identity
+        depends_on:
+            db-identity:
+                condition: service_started
+        image: lucoxs/sol_api_identity:latest
+        environment:
+            ConnectionStrings:Server: mssql-identity
+            ConnectionStrings:Port: 1446
+            ConnectionStrings:Database: IdentityConfig
+            ConnectionStrings:User: sa
+            ConnectionStrings:Password: Pass@word
+        ports:
+            - 7001:80
+        networks:
+            - db-identity-network
+            - api-network

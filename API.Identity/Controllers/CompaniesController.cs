@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using API.Identity.DTO.Company;
 using API.Identity.Services;
 using Swashbuckle.AspNetCore.Annotations;
+using Serilog;
 
 namespace API.Identity.Controllers
 {

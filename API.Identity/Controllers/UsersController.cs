@@ -26,7 +26,6 @@ namespace API.Identity.Controllers
             _userManager = userManager;
         }
 
-        //TODO : super_admin
         [HttpGet("api/v1/Companies/{company_id}/[controller]")]
         public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers(int company_id)
         {
@@ -53,7 +52,6 @@ namespace API.Identity.Controllers
             }
         }
 
-        //TODO : admin
         [HttpGet("api/v1/Companies/me/[controller]")]
         public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers()
         {
@@ -71,7 +69,6 @@ namespace API.Identity.Controllers
             }
         }
 
-        //TODO : super_admin
         [HttpGet("api/v1/Companies/{company_id}/[controller]/{user_id}")]
         public async Task<ActionResult<UserDTO>> GetUser(int company_id, string user_id)
         {
@@ -95,7 +92,6 @@ namespace API.Identity.Controllers
             }
         }
 
-        //TODO : user
         [HttpGet("api/v1/Companies/me/[controller]/me")]
         public async Task<ActionResult<UserDTO>> GetUserMe()
         {
@@ -115,7 +111,6 @@ namespace API.Identity.Controllers
             }
         }
 
-        //TODO : admin
         [HttpPost("api/v1/Companies/me/[controller]")]
         public async Task<ActionResult<UserDTO>> PostUser([FromBody] UserNewDTO userNewDTO)
         {
@@ -140,7 +135,6 @@ namespace API.Identity.Controllers
 
                 var roles = await _userManager.GetRolesAsync(user);
 
-                //TODO : Get user id
                 return CreatedAtAction("GetUser", new { company_id = companyId, user_id = user.Id }, new UserDTO(user, roles.First()));
             }
             catch (Exception ex)
@@ -149,7 +143,6 @@ namespace API.Identity.Controllers
             }
         }
 
-        //TODO : user
         [HttpPut("api/v1/Companies/me/[controller]/me")]
         [SwaggerResponse(204)]
         public async Task<IActionResult> PutUser([FromBody] UserDTO userDTO)
@@ -186,12 +179,9 @@ namespace API.Identity.Controllers
             }
         }
 
-        //TODO : user
         //TODO : Forgot password
-        //TODO : user
         //TODO : Change password
 
-        //TODO : admin
         [HttpDelete("api/v1/Companies/{company_id}/[controller]/{user_id}")]
         [SwaggerResponse(204)]
         public async Task<IActionResult> DeleteUser(int company_id, string user_id)

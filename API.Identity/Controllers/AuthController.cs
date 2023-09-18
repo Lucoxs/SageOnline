@@ -5,7 +5,10 @@ using Duende.IdentityServer.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols;
+using Newtonsoft.Json;
+using Serilog;
 using System;
+using Token = API.Identity.Models.Token;
 
 namespace API.Identity.Controllers
 {
@@ -25,11 +28,23 @@ namespace API.Identity.Controllers
         {
             try
             {
+                Log.Debug("authhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+                Log.Debug(client_id);
+                Log.Debug(code);
                 var response = await _authService.SignIn(client_id, code);
-                return StatusCode((int)response.HttpStatusCode, response.Json);
+                var responseString = await response.Content.ReadAsStringAsync();
+                Log.Debug(response.IsSuccessStatusCode.ToString());
+                Log.Debug(responseString);
+                if (response.IsSuccessStatusCode)
+                    return StatusCode((int)response.StatusCode, JsonConvert.DeserializeObject<Token>(responseString));
+                else
+                    return StatusCode((int)response.StatusCode, JsonConvert.DeserializeObject<ErrorToken>(responseString));
             }
             catch (Exception ex)
             {
+                Log.Error(ex.Message);
+                Log.Error(ex.StackTrace ?? "");
+                Log.Error(ex.InnerException?.Message ?? "");
                 return BadRequest(ex.Message);
             }
         }
@@ -40,7 +55,11 @@ namespace API.Identity.Controllers
             try
             {
                 var response = await _authService.RefreshToken(client_id, refresh_token);
-                return StatusCode((int)response.HttpStatusCode, response.Json);
+                var responseString = await response.Content.ReadAsStringAsync();
+                if (response.IsSuccessStatusCode)
+                    return StatusCode((int)response.StatusCode, JsonConvert.DeserializeObject<Token>(responseString));
+                else
+                    return StatusCode((int)response.StatusCode, JsonConvert.DeserializeObject<ErrorToken>(responseString));
             }
             catch (Exception ex)
             {
@@ -55,6 +74,8 @@ namespace API.Identity.Controllers
             {
                 var response = await _authService.GetUserInfoAsync(token);
                 return StatusCode((int)response.HttpStatusCode, response.Json);
+                /*var responseString = await response.Content.ReadAsStringAsync();
+                return StatusCode((int)response.StatusCode, JsonConvert.DeserializeObject<object>(responseString));*/
             }
             catch (Exception ex)
             {

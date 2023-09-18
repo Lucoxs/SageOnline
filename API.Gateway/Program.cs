@@ -1,8 +1,11 @@
 using API.Gateway.Models;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Newtonsoft.Json;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Request.Middleware;
+using Serilog;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,20 +13,24 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var aut = builder.Configuration["Apps:Authority"];/*
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("CorsPolicy",
-        builder => builder.AllowAnyOrigin()
-        .AllowAnyMethod()
-        .AllowAnyHeader());
-});*/
+var aut = builder.Configuration["Apps:Authority"];
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
+    .CreateLogger();
+
+ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+
+Log.Debug("auth");
 
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
+        options.RequireHttpsMetadata = false;
         options.Authority = builder.Configuration["Apps:Authority"];
         options.Audience = "WebApplication";
+        options.RequireHttpsMetadata = false;
         options.TokenValidationParameters = new()
         {
             ValidateAudience = false,
@@ -33,10 +40,13 @@ builder.Services.AddAuthentication("Bearer")
         };
     });
 
+Log.Debug("ocelot");
 builder.Services.AddOcelot();
 
+Log.Debug("Build");
 var app = builder.Build();
 
+Log.Debug("UseCors");
 app.UseCors(x => x
     .AllowAnyMethod()
     .AllowAnyHeader()
@@ -56,6 +66,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+Log.Debug("Middleware");
 var configuration = new OcelotPipelineConfiguration
 {
     PreAuthenticationMiddleware = async (context, next) =>
@@ -66,7 +77,9 @@ var configuration = new OcelotPipelineConfiguration
 
 await app.UseOcelot(configuration);
 
+Log.Debug("before run");
 app.Run();
+Log.Debug("after run");
 
 async Task PreAuthenticationMiddleware(HttpContext context, Func<Task> next)
 {
@@ -78,11 +91,11 @@ async Task PreAuthenticationMiddleware(HttpContext context, Func<Task> next)
     }
 
     using HttpClient httpClient = new();
-    using HttpRequestMessage message = new(HttpMethod.Get, $"{builder.Configuration["Apps:Authority"]}api/v1/auth/userinfo?token={token}");
-    var response = await httpClient.SendAsync(message);
-    var responseString = await response.Content.ReadAsStringAsync();
+    using HttpRequestMessage messageAuth = new(HttpMethod.Get, $"{builder.Configuration["Apps:Authority"]}api/v1/auth/userinfo?token={token}");
+    var responseAuth = await httpClient.SendAsync(messageAuth);
+    var responseString = await responseAuth.Content.ReadAsStringAsync();
 
-    if (!response.IsSuccessStatusCode)
+    if (!responseAuth.IsSuccessStatusCode)
     {
         context.Items.SetError(new UnauthenticatedError(responseString));
         return;
@@ -92,6 +105,14 @@ async Task PreAuthenticationMiddleware(HttpContext context, Func<Task> next)
     if (tokenClaim == null)
     {
         context.Items.SetError(new UnauthenticatedError("Empty claims"));
+        return;
+    }
+
+    using HttpRequestMessage messageUser = new(HttpMethod.Get, $"{builder.Configuration["Apps:Authority"]}api/v1/companies/{tokenClaim.CompanyId}/users/{tokenClaim.UserId}");
+    var responseUser = await httpClient.SendAsync(messageUser);
+    if (!responseUser.IsSuccessStatusCode)
+    {
+        context.Items.SetError(new UnauthenticatedError("company or user doesn't exist"));
         return;
     }
 

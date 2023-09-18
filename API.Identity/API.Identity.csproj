@@ -14,11 +14,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="cert.pem" />
+    <None Remove="key.pem" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="cert.pem" />
+    <EmbeddedResource Include="key.pem" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Duende.IdentityServer" Version="6.3.3" />
     <PackageReference Include="Duende.IdentityServer.AspNetIdentity" Version="6.3.3" />
     <PackageReference Include="Duende.IdentityServer.EntityFramework" Version="6.3.3" />
     <PackageReference Include="Duende.IdentityServer.Storage" Version="6.3.3" />
     <PackageReference Include="Microsoft.AspNet.Cors" Version="5.2.9" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="7.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="7.0.10" />
