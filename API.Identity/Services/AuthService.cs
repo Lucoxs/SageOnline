@@ -1,4 +1,5 @@
 ﻿using API.Identity.Interfaces;
+using API.Identity.Models;
 using Azure.Core;
 using Duende.IdentityServer.Models;
 using IdentityModel.Client;
@@ -17,7 +18,7 @@ namespace API.Identity.Services
         public AuthService(IConfiguration configuration)
         {
             _configuration = configuration;
-            _authority = $"{_configuration["ASPNETCORE_URLS"]?.Replace("+", "localhost")}/";
+            _authority = $"https://localhost:7001/";
             Log.Debug(_authority);
         }
 
@@ -82,6 +83,20 @@ namespace API.Identity.Services
                 Token = refresh_token,
                 TokenTypeHint = "refresh_token"
             });
+        }
+
+        public async Task<TokenClaim> GetTokenClaimAsync(HttpRequest request)
+        {
+            string? token = request.Headers["Authorization"].ToString()?.Replace("Bearer ", "");
+            if (string.IsNullOrEmpty(token))
+                throw new Exception("Empty claim");
+
+            var userInfo = await GetUserInfoAsync(token);
+            if (userInfo.IsError)
+                throw new Exception("Empty claim");
+
+            return JsonConvert.DeserializeObject<TokenClaim>(userInfo.Json.GetRawText()) 
+                ?? throw new Exception("Empty claim");
         }
 
         public void Dispose()

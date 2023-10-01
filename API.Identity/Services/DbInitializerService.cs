@@ -32,9 +32,9 @@ namespace API.Identity.Services
 
         public void Initialize()
         {
-            _dbContext.Database.EnsureCreated();
+            //_dbContext.Database.EnsureCreated();
             //_dbContext.Database.Migrate();
-
+/*
             if (_roleManager.FindByNameAsync(Config.SuperAdmin).GetAwaiter().GetResult() == null)
             {
                 _roleManager.CreateAsync(new IdentityRole(Config.SuperAdmin)).GetAwaiter().GetResult();
@@ -88,18 +88,18 @@ namespace API.Identity.Services
 
             if (_userManager.Users.FirstOrDefault(x => x.Email == superAdminUser.Email) == null)
             {
-                _userManager.CreateAsync(superAdminUser/*, "Admin123*"*/).GetAwaiter().GetResult();
+                _userManager.CreateAsync(superAdminUser*//*, "Admin123*"*//*).GetAwaiter().GetResult();
                 _userManager.AddToRoleAsync(superAdminUser, Config.SuperAdmin).GetAwaiter().GetResult();
                 _userManager.AddToRoleAsync(superAdminUser, Config.Admin).GetAwaiter().GetResult();
                 _userManager.AddToRoleAsync(superAdminUser, Config.User).GetAwaiter().GetResult();
                 _userManager.AddToRoleAsync(superAdminUser, Config.OfflineAccess).GetAwaiter().GetResult();
                 _userManager.AddToRoleAsync(superAdminUser, Config.OpenId).GetAwaiter().GetResult();
 
-               /* _userManager.AddClaimsAsync(superAdminUser, new Claim[]
+               *//* _userManager.AddClaimsAsync(superAdminUser, new Claim[]
                 {
                      new Claim(JwtClaimTypes.Name, superAdminUser.UserName),
                      new Claim(JwtClaimTypes.Role, Config.SuperAdmin)
-                }).GetAwaiter().GetResult();*/
+                }).GetAwaiter().GetResult();*//*
             }
 
             User superAdmin2 = new()
@@ -117,16 +117,16 @@ namespace API.Identity.Services
 
             if (_userManager.Users.FirstOrDefault(x => x.Email == superAdmin2.Email) == null)
             {
-                var t = _userManager.CreateAsync(superAdmin2/*, "Admin123*"*/).GetAwaiter().GetResult();
+                var t = _userManager.CreateAsync(superAdmin2*//*, "Admin123*"*//*).GetAwaiter().GetResult();
                 _userManager.AddToRoleAsync(superAdmin2, Config.User).GetAwaiter().GetResult();
                 _userManager.AddToRoleAsync(superAdmin2, Config.OfflineAccess).GetAwaiter().GetResult();
                 _userManager.AddToRoleAsync(superAdmin2, Config.OpenId).GetAwaiter().GetResult();
 
-                /*_userManager.AddClaimsAsync(superAdmin2, new Claim[]
+                *//*_userManager.AddClaimsAsync(superAdmin2, new Claim[]
                 {
                      new Claim(JwtClaimTypes.Name, superAdmin2.UserName),
                      new Claim(JwtClaimTypes.Role, Config.SuperAdmin)
-                }).GetAwaiter().GetResult();*/
+                }).GetAwaiter().GetResult();*//*
             }
 
             User adminUser = new()
@@ -144,18 +144,18 @@ namespace API.Identity.Services
 
             if (_userManager.Users.FirstOrDefault(x => x.Email == adminUser.Email) == null)
             {
-                var t = _userManager.CreateAsync(adminUser/*, "Admin123*"*/).GetAwaiter().GetResult();
+                var t = _userManager.CreateAsync(adminUser*//*, "Admin123*"*//*).GetAwaiter().GetResult();
                 _userManager.AddToRoleAsync(adminUser, Config.Admin).GetAwaiter().GetResult();
                 _userManager.AddToRoleAsync(adminUser, Config.User).GetAwaiter().GetResult();
                 _userManager.AddToRoleAsync(adminUser, Config.OfflineAccess).GetAwaiter().GetResult();
                 _userManager.AddToRoleAsync(adminUser, Config.OpenId).GetAwaiter().GetResult();
 
-                /*_userManager.AddClaimsAsync(adminUser, new Claim[]
+                *//*_userManager.AddClaimsAsync(adminUser, new Claim[]
                 {
                      new Claim(JwtClaimTypes.Name, adminUser.UserName),
                      new Claim(JwtClaimTypes.Role, Config.SuperAdmin)
-                }).GetAwaiter().GetResult();*/
-            }
+                }).GetAwaiter().GetResult();*//*
+            }*/
         }
     }
 }

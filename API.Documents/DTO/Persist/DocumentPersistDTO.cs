@@ -29,6 +29,8 @@ namespace API.Documents.DTO.Persist
         [JsonProperty("do_contact_id")]
         public int ContactId { get; set; }
 
+        public List<DocumentLinePersistDTO> documentLines { get; set; } = new List<DocumentLinePersistDTO>();
+             
         public DocumentPersistDTO()
         {
 
@@ -47,6 +49,8 @@ namespace API.Documents.DTO.Persist
             WarehouseId = document.WarehouseId;
             ThirdAccountId = document.ThirdAccountId;
             ContactId = document.ContactId;
+            foreach(var line in document.Lines)
+                documentLines.Add(new(line));
         }
     }
 }

@@ -8,6 +8,7 @@ using API.Documents.DTO.Persist;
 using Microsoft.Identity.Client;
 using API.Documents.Enums;
 using Serilog;
+using API.Documents.Models.Program;
 
 namespace API.Documents.Controllers
 {
@@ -32,10 +33,16 @@ namespace API.Documents.Controllers
             if (company_id <= 0)
                 return NotFound();
 
-            if (!await CompanyService.ExistCompany(company_id))
-                return NotFound("Company doesn't exist");
+            var documents = await _context.Documents
+                .Where(x => x.CompanyId == company_id && !x.IsDeleted)
+                .Include(y => y.Lines)
+                .ToListAsync();
 
-            var documents = await _context.Documents.Where(x => x.CompanyId == company_id && !x.IsDeleted).ToListAsync();
+            foreach(var document in documents)
+            {
+                _documentService.GetDocumentChildrens(document);
+            }
+
             return Ok(documents.Select(x => new DocumentPersistDTO(x)));
         }
 
@@ -49,10 +56,8 @@ namespace API.Documents.Controllers
             if (!await ExistDocumentAsync(id, company_id))
                 return NotFound();
 
-            if (!await CompanyService.ExistCompany(company_id))
-                return NotFound("Company doesn't exist");
-
             var document = await GetDocumentAsync(id, company_id);
+            _documentService.GetDocumentChildrens(document);
             var documentResponse = new DocumentPersistDTO(document);
 
             return Ok(documentResponse);
@@ -69,9 +74,6 @@ namespace API.Documents.Controllers
 
             if (!await ExistDocumentAsync(id, company_id))
                 return NotFound();
-
-            if (!await CompanyService.ExistCompany(company_id) || !await UserService.ExistUser(company_id, user_id))
-                return NotFound("Company or user doesn't exist");
 
             var document = await GetDocumentAsync(id, company_id);
 
@@ -106,119 +108,48 @@ namespace API.Documents.Controllers
                 || string.IsNullOrWhiteSpace(user_id))
                 return BadRequest();
 
-            if (!await _documentService.ExistWarehouse(company_id, documentNewDTO.WarehouseId))
-                throw new Exception("warehouse doesn't exist");
-
-            if (documentNewDTO.DocumentType == DocumentType.StockTransfert)
+            List<CheckStock> variantQuantities = new();
+            try
             {
-                //TODO Check destination warehouse
-                //origine != destination 
-                //destination exist
+                variantQuantities = await _documentService.CheckDocument(documentNewDTO, company_id);
             }
-
-            if (!await _documentService.ExistThirdAccount(company_id, documentNewDTO.ThirdAccountId))
-                throw new Exception("third account doesn't exist");
-            
-            if (documentNewDTO.ContactId == null)
+            catch(Exception ex)
             {
-                var contacts = await _documentService.GetThirdAccountFirstContacts(company_id, documentNewDTO.ThirdAccountId);
-                documentNewDTO.ContactId = contacts?.Id;
-            }
-            else
-            {
-                if (!await _documentService.ExistThirdAccountContact(company_id, documentNewDTO.ThirdAccountId, documentNewDTO.ContactId))
-                    throw new Exception("contact doesn't exist");
-            }
-
-
-            if (documentNewDTO.ShippingAddressId == null)
-            {
-                var shippingAddresses = await _documentService.GetThirdAccountFirstShippingAddresses(company_id, documentNewDTO.ThirdAccountId);
-                documentNewDTO.ShippingAddressId = shippingAddresses?.Id;
-            }
-            else
-            {
-                if (!await _documentService.ExistThirdAccountShippingAddress(company_id, documentNewDTO.ThirdAccountId, documentNewDTO.ShippingAddressId))
-                    throw new Exception("shipping adrress doesn't exist");
-            }
-
-            Dictionary<int, int> variantQuantities = new();
-            foreach (var documentLine in documentNewDTO.DocumentLineNewDTOs)
-            {
-                if (!documentLine.IsBundle)
-                {
-                    var product = await _documentService.GetProductVariant(company_id, documentLine.DocumentLineVariantNewDTO.ProductId, documentLine.DocumentLineVariantNewDTO.VariantId)
-                        ?? throw new Exception("product doesn't exist");
-
-                    if (variantQuantities.ContainsKey(documentLine.DocumentLineVariantNewDTO.VariantId))
-                        variantQuantities[documentLine.DocumentLineVariantNewDTO.VariantId] += documentLine.DocumentLineVariantNewDTO.Quantity;
-                    else
-                        variantQuantities.Add(documentLine.DocumentLineVariantNewDTO.VariantId, documentLine.DocumentLineVariantNewDTO.Quantity);
-                }
-                else
-                {
-                    foreach(var documentLineBundleElement in documentLine.DocumentLineBundleNewDTO.DocumentLineBundleElementNEWDTO)
-                    {
-                        var bundleElement = await _documentService.GetBundleElement(company_id, documentLine.DocumentLineBundleNewDTO.BundleId, documentLineBundleElement.VariantId);
-
-                        if (variantQuantities.ContainsKey(documentLineBundleElement.VariantId))
-                            variantQuantities[documentLineBundleElement.VariantId] += documentLineBundleElement.Quantity;
-                        else
-                            variantQuantities.Add(documentLineBundleElement.VariantId, documentLineBundleElement.Quantity);
-                    }
-                }
-            }
-
-            bool hasCheckStock = documentNewDTO.DocumentType is DocumentType.VentePrepaLivraison
-                or DocumentType.VenteLivraison
-                or DocumentType.VenteFacture
-                or DocumentType.AchatDemande
-                or DocumentType.AchatCommande
-                or DocumentType.AchatFacture
-                or DocumentType.StockSortie
-                or DocumentType.StockTransfert;
-
-            if (hasCheckStock)
-            {
-                foreach (var variantQuantity in variantQuantities)
-                {
-                    var stock = await _documentService.GetStock(company_id, documentNewDTO.WarehouseId, variantQuantity.Key);
-                    if (stock.Quantity < variantQuantity.Value)
-                        throw new Exception("not enough stock");
-                }
+                return BadRequest($"{ex.Message}{Environment.NewLine}{ex.InnerException?.Message}");
             }
 
             var documentNumber = _documentService.GenerateDocumentNumber(documentNewDTO.DocumentType, company_id);
             var document = new Document(company_id, user_id, documentNumber, documentNewDTO);
 
-            bool hasSetStock = documentNewDTO.DocumentType is not DocumentType.VenteDevis
-                and not DocumentType.VenteCommande
-                and not DocumentType.VenteAvoir
-                and not DocumentType.VenteFactureAvoir
-                and not DocumentType.AchatDemande
-                and not DocumentType.AchatCommande
-                and not DocumentType.AchatAvoir
-                and not DocumentType.AchatFactureAvoir;
-
-            if (hasSetStock)
+            try
             {
-                foreach (var variantQuantity in variantQuantities)
-                {
-                    var stock = await _documentService.SetStock(company_id, documentNewDTO.WarehouseId, variantQuantity.Key, variantQuantity.Value);
-                    if (stock < variantQuantity.Value)
-                        throw new Exception("not enough stock");
+                _context.Documents.Add(document);
+                await _context.SaveChangesAsync();
 
-                    if (documentNewDTO.DocumentType == DocumentType.StockTransfert)
+                bool hasSetStock = documentNewDTO.DocumentType is not DocumentType.VenteDevis
+                    and not DocumentType.VenteCommande
+                    and not DocumentType.VenteAvoir
+                    and not DocumentType.VenteFactureAvoir
+                    and not DocumentType.AchatDemande
+                    and not DocumentType.AchatCommande
+                    and not DocumentType.AchatAvoir
+                    and not DocumentType.AchatFactureAvoir;
+
+                if (hasSetStock)
+                {
+                    foreach (var variantQuantity in variantQuantities)
                     {
-                        //TODO set destination stock
-                        //origine != destination 
-                        //destination exist
+                        var stock = await _documentService.SetStock(company_id, documentNewDTO.WarehouseId, variantQuantity.Id, variantQuantity.Quantity);
+
+                        if (documentNewDTO.DocumentType == DocumentType.StockTransfert)
+                            await _documentService.SetStock(company_id, documentNewDTO.WarehouseDestinationId ?? 0, variantQuantity.Id, variantQuantity.Quantity);
                     }
                 }
             }
-
-            _context.Documents.Add(document);
-            await _context.SaveChangesAsync();
+            catch (Exception ex)
+            {
+                return BadRequest($"{ex.Message}{Environment.NewLine}{ex.InnerException?.Message}");
+            }
 
             return CreatedAtAction("GetDocument", new { id = document.Id }, new DocumentPersistDTO(document));
         }
@@ -230,9 +161,6 @@ namespace API.Documents.Controllers
             var document = await _context.Documents.FindAsync(id);
             if (document == null)
                 return NotFound();
-
-            if (!await CompanyService.ExistCompany(company_id) || !await UserService.ExistUser(company_id, user_id))
-                return NotFound("Company or user doesn't exist");
 
             document.SetDeletedDocument(user_id);
 
@@ -268,7 +196,7 @@ namespace API.Documents.Controllers
 
         private async Task<Document> GetDocumentAsync(long id, int company_id)
         {
-            return await _context.Documents.FirstAsync(x => x.Id == id && x.CompanyId == company_id);
+            return await _context.Documents.Include(x => x.Lines).FirstAsync(x => x.Id == id && x.CompanyId == company_id);
         }
     }
 }

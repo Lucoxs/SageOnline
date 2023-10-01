@@ -12,12 +12,12 @@ namespace API.Documents.DTO.New
         public int VariantId { get; set; }
 
         [JsonProperty("lv_unit_price")]
-        public double UnitPrice { get; set; }
+        public double? UnitPrice { get; set; }
 
         [JsonProperty("lv_quantity")]
         public int Quantity { get; set; }
 
         [JsonProperty("lv_discount")]
-        public double Discount { get; set; }
+        public double? Discount { get; set; }
     }
 }

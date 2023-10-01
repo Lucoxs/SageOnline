@@ -1,18 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using API.Identity.Context;
 using API.Identity.Models;
 using API.Identity.DAO;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using API.Identity.DTO.Company;
 using API.Identity.Services;
 using Swashbuckle.AspNetCore.Annotations;
-using Serilog;
+using API.Identity.Interfaces;
 
 namespace API.Identity.Controllers
 {
@@ -22,11 +15,13 @@ namespace API.Identity.Controllers
     {
         private readonly AppDbContext _context;
         private readonly CompanyService _companyService;
+        private readonly IAuthService _authService;
 
-        public CompaniesController(AppDbContext context, CompanyService companyService)
+        public CompaniesController(AppDbContext context, CompanyService companyService, IAuthService authService)
         {
             _context = context;
             _companyService = companyService;
+            _authService = authService;
         }
 
         // GET: api/v1/Companies
@@ -68,11 +63,8 @@ namespace API.Identity.Controllers
         {
             try
             {
-                var coid = Request.Headers.GetCommaSeparatedValues("company_id")?.FirstOrDefault();
-                if (string.IsNullOrEmpty(coid))
-                    return NotFound();
-
-                return await GetCompany(int.Parse(coid));
+                var tokenClaim = await _authService.GetTokenClaimAsync(Request);
+                return await GetCompany(int.Parse(tokenClaim.CompanyId));
             }
             catch (Exception ex)
             {
@@ -119,12 +111,8 @@ namespace API.Identity.Controllers
         {
             try
             {
-
-                var coid = Request.Headers.GetCommaSeparatedValues("company_id")?.FirstOrDefault();
-                if (string.IsNullOrEmpty(coid))
-                    return NotFound();
-
-                return await PutCompany(int.Parse(coid), companyDTO);
+                var tokenClaim = await _authService.GetTokenClaimAsync(Request);
+                return await PutCompany(int.Parse(tokenClaim.CompanyId), companyDTO);
             }
             catch (Exception ex)
             {

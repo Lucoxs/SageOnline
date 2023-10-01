@@ -4,6 +4,7 @@ using API.Documents.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Documents.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230919010713_SetDocumentsLines")]
+    partial class SetDocumentsLines
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -366,10 +369,6 @@ namespace API.Documents.Migrations
                         .HasColumnType("float")
                         .HasColumnName("lb_net_price");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int")
-                        .HasColumnName("lb_quantity");
-
                     b.Property<double>("TotalPrice")
                         .HasColumnType("float")
                         .HasColumnName("lb_total_price");
@@ -480,6 +479,10 @@ namespace API.Documents.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("le_modified_at")
                         .HasColumnOrder(8);
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int")
+                        .HasColumnName("le_quantity");
 
                     b.Property<double>("TotalPrice")
                         .HasColumnType("float")

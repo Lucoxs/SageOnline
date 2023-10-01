@@ -28,10 +28,9 @@ var port = builder.Configuration.GetValue<string>("DB_PORT");
 var database = builder.Configuration.GetValue<string>("DB_DATABASE");
 var user = builder.Configuration.GetValue<string>("DB_USER");
 var password = builder.Configuration.GetValue<string>("DB_PASS");
-var connectionString = $"Server={server},{port};User={user};Password={password};Database={database};";
+var connectionString = $"Server={server},{port};User={user};Password={password};Database={database};Encrypt=false";
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    /*options.UseSqlServer(builder.Configuration["ConnectionString"]);*/
     options.UseSqlServer(connectionString);
 });
 Log.Debug(connectionString);

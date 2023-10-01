@@ -18,6 +18,9 @@ namespace API.Identity.Context
         {
             base.OnModelCreating(modelBuilder);
 
+            /*Database.EnsureCreated();
+            Database.Migrate();*/
+
             modelBuilder.Entity<Company>()
                 .HasMany(x => x.Users)
                 .WithOne(y => y.Company)

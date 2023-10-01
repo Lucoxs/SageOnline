@@ -35,6 +35,37 @@ namespace API.Documents.Utils
             };
         }
 
+        public static DomaineType GetDocumentDomaine(DocumentType documentType)
+        {
+            return documentType switch
+            {
+                DocumentType.VenteDevis => DomaineType.VENTE,
+                DocumentType.VenteCommande => DomaineType.VENTE,
+                DocumentType.VentePrepaLivraison => DomaineType.VENTE,
+                DocumentType.VenteLivraison => DomaineType.VENTE,
+                DocumentType.VenteRetour => DomaineType.VENTE,
+                DocumentType.VenteAvoir => DomaineType.VENTE,
+                DocumentType.VenteFacture => DomaineType.VENTE,
+                DocumentType.VenteFactureRetour => DomaineType.VENTE,
+                DocumentType.VenteFactureAvoir => DomaineType.VENTE,
+
+                DocumentType.AchatDemande => DomaineType.ACHAT,
+                DocumentType.AchatPrepaCommande => DomaineType.ACHAT,
+                DocumentType.AchatCommande => DomaineType.ACHAT,
+                DocumentType.AchatLivraison => DomaineType.ACHAT,
+                DocumentType.AchatRetour => DomaineType.ACHAT,
+                DocumentType.AchatAvoir => DomaineType.ACHAT,
+                DocumentType.AchatFacture => DomaineType.ACHAT,
+                DocumentType.AchatFactureRetour => DomaineType.ACHAT,
+                DocumentType.AchatFactureAvoir => DomaineType.ACHAT,
+
+                DocumentType.StockEntree => DomaineType.STOCK,
+                DocumentType.StockSortie => DomaineType.STOCK,
+                DocumentType.StockTransfert => DomaineType.STOCK,
+                _ => throw new Exception("Invalid domaine type")
+            };
+        }
+
         public static string IncrementDocumentNumber(string? lastDocumentNumber)
         {
             if (string.IsNullOrEmpty(lastDocumentNumber))

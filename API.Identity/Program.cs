@@ -20,14 +20,23 @@ internal class Program
             .WriteTo.Console()
             .CreateLogger();
 
+        builder.WebHost.UseUrls("https://localhost:7001");
+
         builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 
         builder.Services.AddControllersWithViews();
         builder.Services.AddSwaggerGen();
 
+        var DB_SERVER = builder.Configuration.GetValue<string>("DB_SERVER");
+        var DB_PORT = builder.Configuration.GetValue<string>("DB_PORT");
+        var DB_DATABASE = builder.Configuration.GetValue<string>("DB_DATABASE");
+        var DB_USER = builder.Configuration.GetValue<string>("DB_USER");
+        var DB_PASS = builder.Configuration.GetValue<string>("DB_PASS");
+
+        string connectionString = $"Server={DB_SERVER},{DB_PORT};User={DB_USER};Password={DB_PASS};Database={DB_DATABASE};Encrypt=False";
         builder.Services.AddDbContext<AppDbContext>(options =>
         {
-            options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConfig"));
+            options.UseSqlServer(connectionString);
         });
 
         builder.Services.AddDataProtection()
@@ -80,13 +89,13 @@ internal class Program
         {
             app.UseSwagger();
             app.UseSwaggerUI();
-            SeedData();
+            /*SeedData();*/
         }
 
         app.UseHttpsRedirection();
         app.UseStaticFiles();
 
-        SeedData();
+        /*SeedData();*/
 
         app.UseRouting();
         app.UseIdentityServer();
@@ -98,11 +107,11 @@ internal class Program
 
         app.Run();
 
-        void SeedData()
+        /*void SeedData()
         {
             using var scope = app.Services.CreateScope();
             var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializerService>();
             dbInitializer.Initialize();
-        }
+        }*/
     }
 }

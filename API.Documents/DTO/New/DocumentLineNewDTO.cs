@@ -6,7 +6,7 @@ namespace API.Documents.DTO.New
     public class DocumentLineNewDTO
     {
         [JsonProperty("dl_label")]
-        public string Label { get; set; }
+        public string? Label { get; set; }
 
         [JsonProperty("dl_is_bundle")]
         public bool IsBundle { get; set; }

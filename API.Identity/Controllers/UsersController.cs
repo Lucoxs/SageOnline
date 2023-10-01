@@ -1,6 +1,7 @@
 ﻿using API.Identity.Context;
 using API.Identity.DAO;
 using API.Identity.DTO.User;
+using API.Identity.Interfaces;
 using API.Identity.Models;
 using API.Identity.Services;
 using Microsoft.AspNetCore.Identity;
@@ -17,13 +18,15 @@ namespace API.Identity.Controllers
         private readonly CompanyService _companyService;
         private readonly UserService _userService;
         private readonly UserManager<User> _userManager;
+        private readonly IAuthService _authService;
 
 
-        public UsersController(CompanyService companyService, UserService userService, UserManager<User> userManager)
+        public UsersController(CompanyService companyService, UserService userService, UserManager<User> userManager, IAuthService authService)
         {
             _companyService = companyService;
             _userService = userService;
             _userManager = userManager;
+            _authService = authService;
         }
 
         [HttpGet("api/v1/Companies/{company_id}/[controller]")]
@@ -57,11 +60,8 @@ namespace API.Identity.Controllers
         {
             try
             {
-                var company_id = Request.Headers.GetCommaSeparatedValues("company_id")?.FirstOrDefault();
-                if (string.IsNullOrWhiteSpace(company_id))
-                    throw new Exception("Invalid headers");
-
-                return await GetUsers(int.Parse(company_id));
+                var tokenClaim = await _authService.GetTokenClaimAsync(Request);
+                return await GetUsers(int.Parse(tokenClaim.CompanyId));
             }
             catch (Exception ex)
             {
@@ -97,13 +97,8 @@ namespace API.Identity.Controllers
         {
             try
             {
-                var user_id = Request.Headers.GetCommaSeparatedValues("user_id")?.FirstOrDefault();
-                var company_id = Request.Headers.GetCommaSeparatedValues("company_id")?.FirstOrDefault();
-
-                if (string.IsNullOrWhiteSpace(user_id) || string.IsNullOrWhiteSpace(company_id))
-                    throw new Exception("Invalid headers");
-
-                return await GetUser(int.Parse(company_id), user_id);
+                var tokenClaim = await _authService.GetTokenClaimAsync(Request);
+                return await GetUser(int.Parse(tokenClaim.CompanyId), tokenClaim.UserId);
             }
             catch (Exception ex)
             {
@@ -116,10 +111,8 @@ namespace API.Identity.Controllers
         {
             try
             {
-                var company_id = Request.Headers.GetCommaSeparatedValues("company_id")?.FirstOrDefault();
-                var companyId = int.Parse(company_id);
-                if (companyId != userNewDTO.CompanyId)
-                    throw new Exception("invalid request");
+                var tokenClaim = await _authService.GetTokenClaimAsync(Request);
+                var companyId = int.Parse(tokenClaim.CompanyId);
 
                 var company = await _companyService.GetCompany(companyId);
                 if (company == null)
@@ -149,21 +142,17 @@ namespace API.Identity.Controllers
         {
             try
             {
-                var user_id = Request.Headers.GetCommaSeparatedValues("user_id")?.FirstOrDefault();
-                var company_id = Request.Headers.GetCommaSeparatedValues("company_id")?.FirstOrDefault();
+                var tokenClaim = await _authService.GetTokenClaimAsync(Request);
 
-                if (string.IsNullOrWhiteSpace(user_id) || string.IsNullOrWhiteSpace(company_id))
-                    return NotFound("company or user doesn't exist");
-
-                var companyId = int.Parse(company_id);
-                if (companyId != userDTO.CompanyId || user_id != userDTO.Id)
+                var companyId = int.Parse(tokenClaim.CompanyId);
+                if (companyId != userDTO.CompanyId || tokenClaim.UserId != userDTO.Id)
                     return BadRequest("invalid request");
 
                 var company = await _companyService.GetCompany(companyId);
                 if (company == null)
                     return NotFound("company doesn't exist");
 
-                var user = await _userService.GetUser(company, user_id);
+                var user = await _userService.GetUser(company, tokenClaim.UserId);
                 if (user == null)
                     return NotFound("user doesn't exist");
 

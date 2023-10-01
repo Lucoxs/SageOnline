@@ -1,5 +1,9 @@
+using API.Gateway;
 using API.Gateway.Models;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Logging;
 using Newtonsoft.Json;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
@@ -13,12 +17,31 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.WebHost.UseUrls("https://localhost:7000");
+
 var aut = builder.Configuration["Apps:Authority"];
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .WriteTo.Console()
     .CreateLogger();
+
+IdentityModelEventSource.ShowPII = true;
+
+var DB_SERVER = builder.Configuration.GetValue<string>("DB_SERVER");
+var DB_PORT = builder.Configuration.GetValue<string>("DB_PORT");
+var DB_DATABASE = builder.Configuration.GetValue<string>("DB_DATABASE");
+var DB_USER = builder.Configuration.GetValue<string>("DB_USER");
+var DB_PASS = builder.Configuration.GetValue<string>("DB_PASS");
+
+string connectionString = $"Server={DB_SERVER},{DB_PORT};User={DB_USER};Password={DB_PASS};Database={DB_DATABASE};Encrypt=False";
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    options.UseSqlServer(connectionString);
+});
+
+builder.Services.AddDataProtection()
+    .PersistKeysToDbContext<AppDbContext>();
 
 ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 
@@ -34,6 +57,7 @@ builder.Services.AddAuthentication("Bearer")
         options.TokenValidationParameters = new()
         {
             ValidateAudience = false,
+            ValidateIssuer = false,
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero,
             ValidTypes = new[] { "at+jwt" }
@@ -60,7 +84,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

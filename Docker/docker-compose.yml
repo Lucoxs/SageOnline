@@ -3,25 +3,23 @@ version: "3.9"
 networks:
     backend:
     products:
-    # identity:
     documents:
     thirdAccounts:
 
 services:
-    api-gateway:
-        container_name: api-gateway
-        image: lucoxs/sol_api_gateway:latest
-        environment:
-            ASPNETCORE_URLS: "https://+"
-            ASPNETCORE_HTTPS_PORT: 7000
-            ASPNETCORE_Kestrel__Certificates__Default__Password: "Pass@word"
-            ASPNETCORE_Kestrel__Certificates__Default__Path: "/https/aspnetapp.pfx"
+    db-gateway:
+        container_name: db-gateway
+        image: mcr.microsoft.com/mssql/server:2019-latest
         ports:
-            - 7000:443
+            - 1448:1433
+        environment:
+            MSSQL_SA_PASSWORD: Pass@word
+            ACCEPT_EULA: Y
         volumes:
-            - ${USERPROFILE}\\.aspnet\\https:/https/
-        networks:
-            - backend
+            - ${USERPROFILE}/SageOnline/volumes/gateway/mssql/data:/var/opt/mssql/data
+            - ${USERPROFILE}/SageOnline/volumes/gateway/mssql/log:/var/opt/mssql/log
+            - ${USERPROFILE}/SageOnline/volumes/gateway/mssql/secrets:/var/opt/mssql/secrets
+        restart: always
     
     db-identity:
         container_name: db-identity
@@ -31,38 +29,11 @@ services:
         environment:
             MSSQL_SA_PASSWORD: Pass@word
             ACCEPT_EULA: Y
-        # networks:
-        #     - identity
         volumes:
             - ${USERPROFILE}/SageOnline/volumes/identity/mssql/data:/var/opt/mssql/data
             - ${USERPROFILE}/SageOnline/volumes/identity/mssql/log:/var/opt/mssql/log
             - ${USERPROFILE}/SageOnline/volumes/identity/mssql/secrets:/var/opt/mssql/secrets
         restart: always
-
-    # api-identity:
-    #     container_name: api-identity
-    #     depends_on:
-    #         db-identity:
-    #             condition: service_started
-    #     image: lucoxs/sol_api_identity:latest
-    #     environment:
-    #         ASPNETCORE_URLS: "https://+"
-    #         ASPNETCORE_HTTPS_PORT: 7001
-    #         ASPNETCORE_Kestrel__Certificates__Default__Password: "Pass@word"
-    #         ASPNETCORE_Kestrel__Certificates__Default__Path: "/https/aspnetapp.pfx"
-    #         DB_SERVER: db-identity
-    #         DB_PORT: 1433
-    #         DB_DATABASE: IdentityConfig
-    #         DB_USER: sa
-    #         DB_PASS: Pass@word
-    #     ports:
-    #         - 7001:443
-    #     volumes:
-    #         - ${USERPROFILE}\\.aspnet\\https:/https/
-    #     networks:
-    #         - identity
-    #         - backend
-    #     restart: on-failure:3
 
     db-products:
         container_name: db-products
@@ -88,7 +59,7 @@ services:
             - 3030:8080
         environment:
             DB_SERVER: db-products
-            DB_PORT: 1445
+            DB_PORT: 1433
             DB_USER: sa
             DB_PASS: Pass@word
             DB_DATABASE: sol_products

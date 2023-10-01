@@ -33,6 +33,9 @@ namespace API.Documents.Models
         [Column("do_warehouse_id")]
         public int WarehouseId { get; set; }
 
+        [Column("do_warehouse_destination_id")]
+        public int? WarehouseDestinationId { get; set; }
+
         [Column("do_third_account_id")]
         public int ThirdAccountId { get; set; }
 
@@ -56,8 +59,12 @@ namespace API.Documents.Models
             this.ShippingDate = documentNewDTO.ShippingDate;
             this.ShippingAddressId = documentNewDTO.ShippingAddressId ?? 0;
             this.WarehouseId = documentNewDTO.WarehouseId;
+            this.WarehouseDestinationId = documentNewDTO.WarehouseDestinationId;
             this.ThirdAccountId = documentNewDTO.ThirdAccountId;
             this.ContactId = documentNewDTO.ContactId ?? 0;
+
+            foreach(var line in documentNewDTO.DocumentLineNewDTOs)
+                Lines.Add(new DocumentLine(company_id, user_id, line));
         }
 
         public void SetUpdatedDocument(string user_id, DocumentPersistDTO documentDTO)

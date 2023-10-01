@@ -43,6 +43,7 @@ namespace API.Identity.Services
         {
             user.FirstName = userDTO.FirstName;
             user.LastName = userDTO.LastName;
+            user.PhoneNumber = userDTO.PhoneNumber;
 
             //TODO : manage roles
             /*user.Role = userDTO.Role;*/

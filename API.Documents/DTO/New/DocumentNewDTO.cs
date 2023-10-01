@@ -21,6 +21,9 @@ namespace API.Documents.DTO.New
         [JsonProperty("do_warehouse_id")]
         public int WarehouseId { get; set; }
 
+        [JsonProperty("do_warehouse_destination_id")]
+        public int? WarehouseDestinationId { get; set; }
+
         [JsonProperty("do_third_account_id")]
         public int ThirdAccountId { get; set; }
 
